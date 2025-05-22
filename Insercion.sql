@@ -34,7 +34,7 @@ GO
 CREATE PROCEDURE dbs1.insertarGrupoFamiliar(@ResponsableNombre VARCHAR(50), @DNI INT)
 AS
 BEGIN
-	IF(LEN(@ResponsableNombre)=0 OR LEN(@DNI)<=0 OR LEN(@DNI)<6 OR @DNI IS NULL)
+	IF(LEN(TRIM(@ResponsableNombre))=0 OR LEN(@DNI)<=0 OR LEN(@DNI)<6 OR LEN(@DNI)<6 OR @DNI IS NULL)
 	BEGIN 
 		RAISERROR ('Informacion ingresada incorrecta',16,1)
 		RETURN
@@ -625,5 +625,129 @@ BEGIN
     SET Estado = 'Borrado'
     WHERE idInscripcion = @idInscripcion
  
+END
+GO
+
+
+--------------------------------Borrado fisico de registro
+--dbsl.CategoriaSocio – Se puede borrar siempre que no haya socios asociados.
+
+--dbsl.GrupoFamiliar – Igual que arriba.
+
+--dbsl.Suum – Se puede eliminar si no tiene reservas asociadas.
+
+--dbsl.MetodoPago – Siempre que no esté usado en Cobro.
+
+--dbsl.Factura, dbsl.Cobro, dbsl.DetalleFactura – En la vida real esto sería lógico por temas contables, pero según el ejercicio, puede ser físico si no hay dependencia.
+
+--dbsl.PiletaVerano e dbsl.Invitado – Se pueden eliminar registros viejos si ya no son necesarios.
+
+
+
+CREATE PROCEDURE dbsl.eliminarCategoriaSocio
+    @idCategoria INT
+AS
+BEGIN
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE id_categoria = @idCategoria)
+    BEGIN
+        RAISERROR('La categoria de socio no existe', 16, 1)
+        RETURN
+    END
+
+    -- Eliminar el registro
+    DELETE FROM dbsl.CategoriaSocio
+    WHERE id_categoria = @idCategoria
+
+END
+GO
+
+CREATE PROCEDURE dbsl.eliminarGrupoFamiliar
+    @idGrupo INT
+AS
+BEGIN
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE id_grupo = @idGrupo)
+    BEGIN
+        RAISERROR('El grupo no existe', 16, 1)
+        RETURN
+    END
+
+    -- Eliminar el registro
+    DELETE FROM dbsl.GrupoFamiliar
+    WHERE id_grupo = @idGrupo
+
+END
+go
+
+CREATE PROCEDURE dbsl.eliminarSum
+    @idSum INT
+AS
+BEGIN
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE id_sum = @idSum)
+    BEGIN
+        RAISERROR('El sum indicado no existe', 16, 1)
+        RETURN
+    END
+
+    -- Eliminar el registro
+    DELETE FROM dbsl.SUUM
+    WHERE id_sum = @idSum
+
+END
+GO
+
+CREATE PROCEDURE dbsl.EliminarMetodoPago
+    @idMetodo INT
+AS
+BEGIN
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE id_metodo_pago = @idMetodo)
+    BEGIN
+        RAISERROR('El metodo indicado no existe', 16, 1)
+        RETURN
+    END
+
+    -- Eliminar el registro
+    DELETE FROM dbsl.MetodoPago
+    WHERE id_metodo_pago = @idMetodo
+
+END
+GO
+
+CREATE PROCEDURE dbsl.EliminarFactura
+    @idFactura INT
+AS
+BEGIN
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE id_factura = @idFactura)
+    BEGIN
+        RAISERROR('La factura indicada no existe', 16, 1)
+        RETURN
+    END
+
+    -- Eliminar el registro
+    DELETE FROM dbsl.Factura
+    WHERE id_factura = @idFactura
+
+END
+GO
+
+CREATE PROCEDURE dbsl.EliminarPiletaVerano
+    @idFactura INT
+AS
+BEGIN
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE id_factura = @idFactura)
+    BEGIN
+        RAISERROR('La factura indicada no existe', 16, 1)
+        RETURN
+    END
+
+    -- Eliminar el registro
+    DELETE FROM dbsl.Factura
+    WHERE id_factura = @idFactura
+
 END
 GO
