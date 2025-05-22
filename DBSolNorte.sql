@@ -161,11 +161,21 @@ CREATE TABLE dbsl.DetalleFactura (
     Descripcion VARCHAR(50),
     Monto INT,
 	idFactura INT,
-    FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura)
+    FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura),
+	FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
 )
 --drop table dbsl.DetalleFactura
 
-
+CREATE TABLE dbsl.Colonia(
+	idColonia INT IDENTITY(1,1),
+	Nombre varchar(20) default 'Colonia',
+	Costo INT DEFAULT 1000 ,
+	fechaInicio VARCHAR(5) DEFAULT '21-12',
+	fechaFin VARCHAR(5) DEFAULT '20-03',
+	idInscripcion INT,
+	constraint PKColonia primary key(idColonia,idInscripcion),
+	FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
+)
 
 
 
