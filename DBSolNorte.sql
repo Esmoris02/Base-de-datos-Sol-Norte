@@ -6,156 +6,167 @@ create schema dbsl
 --data base sol norte
 go
 CREATE TABLE dbsl.CategoriaSocio (
-    id_categoria INT IDENTITY(1,1) PRIMARY KEY,
-    nombre VARCHAR(50),
-    edad_desde INT,
-    edad_hasta INT
-);
-go
+    idCategoria INT IDENTITY(1,1) PRIMARY KEY,
+    NombreCategoria VARCHAR(50),
+    EdadDesde INT,
+    EdadHasta INT
+)
+
 --drop table dbsl.CategoriaSocio
 CREATE TABLE dbsl.GrupoFamiliar (
-    id_grupo INT IDENTITY(1,1) PRIMARY KEY,
-    responsable_nombre VARCHAR(100),
-    dni VARCHAR(20)
-);
-go
+    idGrupo INT IDENTITY(1,1) PRIMARY KEY,
+    ResponsableNombre VARCHAR(50),
+    Dni VARCHAR(20)
+)
+
 --drop table dbsl.GrupoFamiliar
 CREATE TABLE dbsl.Socio (
-    id_socio INT PRIMARY KEY,
-    nombre VARCHAR(100),
-    apellido VARCHAR(100),
-    dni VARCHAR(20),
-    fecha_nac DATE,
-    telefono VARCHAR(20),
-    telefono_emergencia VARCHAR(20),
-    obra_social VARCHAR(100),
-    numero_obra_social VARCHAR(50),
-    id_categoria INT,
-    id_grupo_familiar INT,
-    FOREIGN KEY (id_categoria) REFERENCES dbsl.CategoriaSocio(id_categoria),
-    FOREIGN KEY (id_grupo_familiar) REFERENCES dbsl.GrupoFamiliar(id_grupo)
-);
-go
+    NroSocio INT PRIMARY KEY,
+	Estado VARCHAR(15),  --Para el borrado logico
+    Nombre VARCHAR(50),
+    Apellido VARCHAR(50),
+    Dni VARCHAR(20),
+    FechaNac DATE,
+    Telefono VARCHAR(20),
+    TelefonoEmergencia VARCHAR(20),
+	Email VARCHAR(50),
+    ObraSocial VARCHAR(50),
+    NumeroObraSocial VARCHAR(50),
+    idCategoria INT,
+    idGrupoFamiliar INT,
+    FOREIGN KEY (idCategoria) REFERENCES dbsl.CategoriaSocio(idCategoria),
+    FOREIGN KEY (idGrupoFamiliar) REFERENCES dbsl.GrupoFamiliar(idGrupo)
+)
+
 --drop table dbsl.Socio
 
 CREATE TABLE dbsl.Usuario (
-    id_usuario INT PRIMARY KEY,
-    contrasenia VARBINARY(256) NOT NULL,
-    rol VARCHAR(50),
-    fec_vig DATE,
-    id_socio INT,  -- puede ser NULL
-    FOREIGN KEY (id_socio) REFERENCES dbsl.Socio(id_socio)
-);
+    Usuario VARCHAR(50) PRIMARY KEY,
+	Estado VARCHAR(15),  --Para el borrado logico
+    Contrasenia VARBINARY(256) NOT NULL,
+    Rol VARCHAR(50),
+    FecVig DATE,
+    NroSocio INT,  -- puede ser NULL
+    FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio)
+)
 --drop table dbsl.Usuario
-go
+
 --drop table dbsl.Usuario
 CREATE TABLE dbsl.Actividad (
-    id_actividad INT IDENTITY(1,1) PRIMARY KEY,
-    nombre_actividad VARCHAR(100),
-    costo DECIMAL(10,2)
-);
+    idActividad INT IDENTITY(1,1) PRIMARY KEY,
+	Estado VARCHAR(15),  --Para el borrado logico
+    NombreActividad VARCHAR(50),
+    Costo INT
+)
 --drop table dbsl.Actividad
-go 
+ 
 CREATE TABLE dbsl.Clase (
-    id_clase INT IDENTITY(1,1) PRIMARY KEY,
-    id_actividad INT,
-    horario TIME,
-    categoria VARCHAR(50),
-    FOREIGN KEY (id_actividad) REFERENCES dbsl.Actividad(id_actividad)
-);
-go
+    idClase INT IDENTITY(1,1) PRIMARY KEY,
+	Estado VARCHAR(15),  --Para el borrado logico
+    Horario TIME,
+	Dia VARCHAR(20)
+    Categoria VARCHAR(50),
+	idActividad INT,
+    FOREIGN KEY (idActividad) REFERENCES dbsl.Actividad(idActividad)
+)
+
 --drop table dbsl.Clase
-CREATE TABLE dbsl.SUUM (
-    id_sum INT IDENTITY(1,1) PRIMARY KEY,
-    direccion VARCHAR(255),
-    precio DECIMAL(10,2)
-);
-go
+CREATE TABLE dbsl.Suum (         
+    idSum INT DEFAULT 1 PRIMARY KEY,
+    Descripcion VARCHAR(100),
+    Precio INT
+)
+
 --drop table dbsl.SUUM
 
 CREATE TABLE dbsl.Reserva (
-    id_reserva INT IDENTITY(1,1) PRIMARY KEY,
-    fecha DATE,
-    horario TIME,
-    id_sum INT
-	FOREIGN KEY (id_sum) REFERENCES dbsl.SUUM(id_sum)
-);
-go
+    idReserva INT IDENTITY(1,1) PRIMARY KEY,
+	Estado VARCHAR(15),  --Para el borrado logico  
+    Fecha DATE,
+    Turno VARCHAR(20),
+    idSum INT 
+	FOREIGN KEY (idSum) REFERENCES dbsl.Suum(idSum)
+)
+
 --drop table dbsl.Reserva
 CREATE TABLE dbsl.Inscripcion (
-    id_inscripcion INT IDENTITY(1,1) PRIMARY KEY,
-    id_socio INT,
-    id_clase INT,
-    fecha DATE,
-    id_reserva INT,
-    FOREIGN KEY (id_socio) REFERENCES dbsl.Socio(id_socio),
-    FOREIGN KEY (id_clase) REFERENCES dbsl.Clase(id_clase),
-    FOREIGN KEY (id_reserva) REFERENCES dbsl.Reserva(id_reserva)
-);
-go
+    idInscripcion INT IDENTITY(1,1) PRIMARY KEY,
+    NroSocio INT,
+    idClase INT,
+    FechaIn DATE,
+    idReserva INT,
+    FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio),
+    FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
+    FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva)
+)
+
 --drop table dbsl.Inscripcion
+
+
+CREATE TABLE dbsl.PiletaVerano(
+	idPileta INT IDENTITY(1,1) PRIMARY KEY,
+	Fecha DATE,
+	CostoSocio INT DEFAULT 1500,
+	CostoInvitado INT DEFAULT 3000,
+	Lluvia BIT NOT NULL DEFAULT 0   --Para que siempre inicialice en 0, y como es tipo BIT solo puede almacenar el 1 o 0
+)
+
 CREATE TABLE dbsl.Invitado (
-    id_invitado INT IDENTITY(1,1) PRIMARY KEY,
-    nombre VARCHAR(100),
-    apellido VARCHAR(100),
-    fecha_invitado DATE,
-    id_inscripcion INT,
-    id_actividad INT,
-    FOREIGN KEY (id_inscripcion) REFERENCES dbsl.Inscripcion(id_inscripcion),
-    FOREIGN KEY (id_actividad) REFERENCES dbsl.Actividad(id_actividad)
-);
-go
+    idInvitado INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(50),
+    Apellido VARCHAR(50),
+    FechaInvitado DATE,
+    idInscripcion INT,
+    idPileta INT,
+    FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion),
+    FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta)
+)
+
 --drop table dbsl.Invitado
 CREATE TABLE dbsl.MetodoPago (
-    id_metodo_pago INT IDENTITY(1,1) PRIMARY KEY,
-    descripcion VARCHAR(100)
-);
-go
+    idMetodoPago INT IDENTITY(1,1) PRIMARY KEY,
+    Descripcion VARCHAR(50)
+)
+
 --drop table dbsl.MetodoPago
 CREATE TABLE dbsl.Factura (
-    id_factura INT IDENTITY(1,1) PRIMARY KEY,
-    fecha_emision DATE,
-    fecha_vencimiento DATE,
-    fecha_segundo_vencimiento DATE,
-    estado VARCHAR(20),  -- 'Pendiente', 'Pagada', 'Anulada'
-    total DECIMAL(10,2),
-    id_inscripcion INT,
-    FOREIGN KEY (id_inscripcion) REFERENCES dbsl.Inscripcion(id_inscripcion)
-);
-go
+    idFactura INT IDENTITY(1,1) PRIMARY KEY,
+    FechaEmision DATE,
+    FechaVencimiento DATE,
+    FechaSegundoVencimiento DATE,
+    Estado VARCHAR(20),  -- 'Pendiente', 'Pagada', 'Anulada'
+    Total INT,
+    idInscripcion INT,
+    FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
+)
+
 --drop table dbsl.Factura
 CREATE TABLE dbsl.Cobro (
-    id_cobro INT IDENTITY(1,1) PRIMARY KEY,
-    monto DECIMAL(10,2),
-    metodo_pago INT,
-    id_factura INT,
-    fecha DATE,
-    reembolso bit not null,
-    monto_reembolso DECIMAL(10,2),
-    FOREIGN KEY (metodo_pago) REFERENCES dbsl.MetodoPago(id_metodo_pago),
-    FOREIGN KEY (id_factura) REFERENCES dbsl.Factura(id_factura)
-);
-go
+    idCobro INT IDENTITY(1,1) PRIMARY KEY,
+    Monto INT,
+    Fecha DATE,
+    Reembolso BIT NOT NULL DEFAULT 0,
+    MontoReembolso INT,
+	SaldoFavor INT,
+	idMetodoPago INT,
+    idFactura INT,
+    FOREIGN KEY (idMetodoPago) REFERENCES dbsl.MetodoPago(idMetodoPago),
+    FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura)
+)
+
 --drop table dbsl.Cobro
 CREATE TABLE dbsl.DetalleFactura (
-    id_detalle INT IDENTITY(1,1) PRIMARY KEY,
-    id_factura INT,
-    tipo_item VARCHAR(50),
-    descripcion TEXT,
-    monto DECIMAL(10,2),
-    FOREIGN KEY (id_factura) REFERENCES dbsl.Factura(id_factura)
-);
+    idDetalle INT IDENTITY(1,1) PRIMARY KEY,
+    TipoItem VARCHAR(50),
+    Descripcion VARCHAR(50),
+    Monto INT,
+	idFactura INT,
+    FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura)
+)
 --drop table dbsl.DetalleFactura
 
-CREATE TABLE dbsl.Colonia(
-	id_colonia INT IDENTITY(1,1) PRIMARY KEY,
-	costo INT DEFAULT 1000 ,
-	fecha_inicio VARCHAR(5) DEFAULT '21-12',
-	fecha_fin VARCHAR(5) DEFAULT '20-03',
-	id_inscripcion INT,
-	FOREIGN KEY (id_inscripcion) REFERENCES dbsl.Inscripcion(id_inscripcion)
-);
---drop table dbsl.Colonia
+
+
 
 
 
