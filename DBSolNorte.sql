@@ -40,7 +40,7 @@ go
 
 CREATE TABLE dbsl.Usuario (
     id_usuario INT PRIMARY KEY,
-    contrasenia VARCHAR(255) NOT NULL,
+    contrasenia VARBINARY(256) NOT NULL,
     rol VARCHAR(50),
     fec_vig DATE,
     id_socio INT,  -- puede ser NULL
