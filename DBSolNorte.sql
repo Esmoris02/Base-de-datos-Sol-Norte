@@ -149,9 +149,9 @@ CREATE TABLE dbsl.DetalleFactura (
 
 CREATE TABLE dbsl.Colonia(
 	id_colonia INT IDENTITY(1,1) PRIMARY KEY,
-	costo INT,
-	fecha_inicio DATE,
-	fecha_fin DATE,
+	costo INT DEFAULT 1000 ,
+	fecha_inicio VARCHAR(5) DEFAULT '21-12',
+	fecha_fin VARCHAR(5) DEFAULT '20-03',
 	id_inscripcion INT,
 	FOREIGN KEY (id_inscripcion) REFERENCES dbsl.Inscripcion(id_inscripcion)
 );
