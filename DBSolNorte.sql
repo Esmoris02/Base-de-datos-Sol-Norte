@@ -147,8 +147,15 @@ CREATE TABLE dbsl.DetalleFactura (
 );
 --drop table dbsl.DetalleFactura
 
-
-
+CREATE TABLE dbsl.Colonia(
+	id_colonia INT IDENTITY(1,1) PRIMARY KEY,
+	costo INT,
+	fecha_inicio DATE,
+	fecha_fin DATE,
+	id_inscripcion INT,
+	FOREIGN KEY (id_inscripcion) REFERENCES dbsl.Inscripcion(id_inscripcion)
+);
+--drop table dbsl.Colonia
 
 
 
