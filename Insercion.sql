@@ -31,7 +31,10 @@ BEGIN
 END
 GO
 --Grupo Familiar
-CREATE PROCEDURE dbs1.insertarGrupoFamiliar(@ResponsableNombre VARCHAR(50), @DNI INT)
+CREATE PROCEDURE dbs1.insertarGrupoFamiliar(
+@ResponsableNombre VARCHAR(50), 
+@DNI VARCHAR(20)
+)
 AS
 BEGIN
 	IF(LEN(TRIM(@ResponsableNombre))=0 OR LEN(@DNI)<=0 OR LEN(@DNI)<6 OR LEN(@DNI)<6 OR @DNI IS NULL)
@@ -65,7 +68,7 @@ CREATE PROCEDURE dbsl.InsertarSocio(
 	@ObraSocial VARCHAR(50),--
 	@NumeroObraSocial VARCHAR(50),--
 	@idCategoria INT,--
-	@idGrupoFamiliar INT--
+	@idGrupoFamiliar INT--puede ser NULL
 )
 AS
 BEGIN
@@ -116,15 +119,33 @@ BEGIN
 		RAISERROR('Categoría de socio no válida.', 16, 1)
 		RETURN
 	END
- 
-	IF NOT EXISTS (SELECT 1 FROM dbsl.GrupoFamiliar WHERE idGrupo = @idGrupoFamiliar)
-	BEGIN
-		RAISERROR('Grupo familiar no válido.', 16, 1)
-		RETURN
-	END
- 
-	INSERT INTO dbsl.Socio (NroSocio, Estado, Nombre, Apellido, Dni, FechaNac, Telefono, TelefonoEmergencia, Email, ObraSocial, NumeroObraSocial, idCategoria, idGrupoFamiliar)
-	VALUES (@NroSocio, @Estado, @Nombre, @Apellido, @Dni, @FechaNac, @Telefono, @TelefonoEmergencia, @Email, @ObraSocial, @NumeroObraSocial, @idCategoria, @idGrupoFamiliar)
+
+    DECLARE @Edad INT = DATEDIFF(YEAR, @FechaNac, GETDATE()) 
+        - CASE 
+			WHEN DATEADD(YEAR, DATEDIFF(YEAR, @FechaNac, GETDATE()), @FechaNac) > GETDATE() THEN 1 ELSE 0 
+		  END
+
+    IF (@Edad < 18)
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM dbsl.GrupoFamiliar WHERE idGrupo = @idGrupoFamiliar)
+        BEGIN
+            RAISERROR('El socio es menor de edad y debe tener un grupo familiar válido.', 16, 1)
+            RETURN
+        END
+    END
+    ELSE
+    BEGIN
+        -- Socios mayores de edad NO deben estar asociados a un grupo familiar
+        IF (@idGrupoFamiliar IS NOT NULL)
+        BEGIN
+            RAISERROR('Los socios mayores de edad no deben tener grupo familiar.', 16, 1)
+            RETURN
+        END
+    END
+
+    -- Inserción final
+    INSERT INTO dbsl.Socio (NroSocio, Estado, Nombre, Apellido, Dni, FechaNac,Telefono, TelefonoEmergencia, Email,ObraSocial, NumeroObraSocial, idCategoria, idGrupoFamiliar)
+    VALUES (@NroSocio, @Estado, @Nombre, @Apellido, @Dni, @FechaNac,@Telefono, @TelefonoEmergencia, @Email,@ObraSocial, @NumeroObraSocial, @idCategoria, @idGrupoFamiliar)
 END
 GO
 --Usuario----------------------------
@@ -192,7 +213,7 @@ BEGIN
         RETURN;
     END
  
-	IF @Estado NOT IN ('activo,inactivo')
+	IF @Estado NOT IN ('activo','inactivo')
 	BEGIN 
 		RAISERROR ('Estado incorrecto. Establece "activo" o "inactivo"',16,1)
 		RETURN
@@ -214,40 +235,48 @@ BEGIN
 	IF (@Horario IS NULL or (@Horario < '08:00' OR @Horario > '22:00') 
 		OR DATEPART(MINUTE, @Horario) % 30 != 0)
 		BEGIN
-			RAISERROR('Ingresa un horario valido entre las 08:00 y 22:00 en intervalos de 30 min', 16, 1);
-			RETURN;
+			RAISERROR('Ingresa un horario valido entre las 08:00 y 22:00 en intervalos de 30 min', 16, 1)
+			RETURN
 		END
  
 	IF (@Dia NOT IN ('Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'))
 		BEGIN
-			RAISERROR('Ingresa un dia valido.', 16, 1);
-			RETURN;
+			RAISERROR('Ingresa un dia valido.', 16, 1)
+			RETURN
 		END
+
+	   
+    IF (@Estado NOT IN ('activo', 'inactivo'))
+    BEGIN
+        RAISERROR('Estado incorrecto. Usa "activo" o "inactivo".', 16, 1)
+        RETURN
+    END
  
-	IF(@Horario = (SELECT 1 FROM dbsl.Clase WHERE Horario = @Horario) AND 
-		@idActividad = (SELECT 1 FROM dbsl.Actividad WHERE idActividad = @idActividad) AND
-		@Dia = (SELECT 1 FROM dbsl.Clase WHERE Dia = @Dia)
-		)
-		BEGIN
-			RAISERROR('Ya hay un horario para esa actividad en ese dia.', 16, 1);
-			RETURN;
-		END
  
 	IF(@Categoria NOT IN ('Menor','Cadete','Adulto'))
 		BEGIN
-			RAISERROR('Categoria invalida. Ingresa "Menor", "Cadete" o "Adulto"', 16, 1);
+			RAISERROR('Categoria invalida. Ingresa "Menor", "Cadete" o "Adulto"', 16, 1)
 			RETURN;
 		END
  
     IF NOT EXISTS (SELECT 1 FROM dbsl.Actividad WHERE idActividad = @idActividad)
     BEGIN
-        RAISERROR('La actividad especificada no existe.', 16, 1);
-        RETURN;
+        RAISERROR('La actividad especificada no existe.', 16, 1)
+        RETURN
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM dbsl.Clase
+        WHERE idActividad = @idActividad AND Dia = @Dia AND Horario = @Horario
+    )
+    BEGIN
+        RAISERROR('Ya existe una clase para esa actividad, día y horario.', 16, 1)
+        RETURN
     END
  
  
-    INSERT INTO dbsl.Clase (Horario, Categoria, idActividad, Estado)
-    VALUES (@Horario, @Categoria, @idActividad, @Estado);
+    INSERT INTO dbsl.Clase (Dia,Horario, Categoria, idActividad, Estado)
+    VALUES (@Dia,@Horario, @Categoria, @idActividad, @Estado)
 END
 GO
 --PiletaVerano
@@ -649,7 +678,7 @@ CREATE PROCEDURE dbsl.eliminarCategoriaSocio
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE id_categoria = @idCategoria)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE idCategoria = @idCategoria)
     BEGIN
         RAISERROR('La categoria de socio no existe', 16, 1)
         RETURN
@@ -657,7 +686,7 @@ BEGIN
 
     -- Eliminar el registro
     DELETE FROM dbsl.CategoriaSocio
-    WHERE id_categoria = @idCategoria
+    WHERE idCategoria = @idCategoria
 
 END
 GO
@@ -667,7 +696,7 @@ CREATE PROCEDURE dbsl.eliminarGrupoFamiliar
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE id_grupo = @idGrupo)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE idGrupo = @idGrupo)
     BEGIN
         RAISERROR('El grupo no existe', 16, 1)
         RETURN
@@ -675,7 +704,7 @@ BEGIN
 
     -- Eliminar el registro
     DELETE FROM dbsl.GrupoFamiliar
-    WHERE id_grupo = @idGrupo
+    WHERE idGrupo = @idGrupo
 
 END
 go
@@ -685,7 +714,7 @@ CREATE PROCEDURE dbsl.eliminarSum
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE id_sum = @idSum)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE idSum = @idSum)
     BEGIN
         RAISERROR('El sum indicado no existe', 16, 1)
         RETURN
@@ -693,7 +722,7 @@ BEGIN
 
     -- Eliminar el registro
     DELETE FROM dbsl.SUUM
-    WHERE id_sum = @idSum
+    WHERE idSum = @idSum
 
 END
 GO
@@ -703,7 +732,7 @@ CREATE PROCEDURE dbsl.EliminarMetodoPago
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE id_metodo_pago = @idMetodo)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idMetodoPago = @idMetodo)
     BEGIN
         RAISERROR('El metodo indicado no existe', 16, 1)
         RETURN
@@ -711,7 +740,7 @@ BEGIN
 
     -- Eliminar el registro
     DELETE FROM dbsl.MetodoPago
-    WHERE id_metodo_pago = @idMetodo
+    WHERE idMetodoPago = @idMetodo
 
 END
 GO
@@ -721,7 +750,7 @@ CREATE PROCEDURE dbsl.EliminarFactura
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE id_factura = @idFactura)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idFactura = @idFactura)
     BEGIN
         RAISERROR('La factura indicada no existe', 16, 1)
         RETURN
@@ -729,7 +758,7 @@ BEGIN
 
     -- Eliminar el registro
     DELETE FROM dbsl.Factura
-    WHERE id_factura = @idFactura
+    WHERE idFactura = @idFactura
 
 END
 GO
@@ -739,7 +768,7 @@ CREATE PROCEDURE dbsl.EliminarPiletaVerano
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE id_factura = @idFactura)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idFactura = @idFactura)
     BEGIN
         RAISERROR('La factura indicada no existe', 16, 1)
         RETURN
@@ -747,7 +776,7 @@ BEGIN
 
     -- Eliminar el registro
     DELETE FROM dbsl.Factura
-    WHERE id_factura = @idFactura
+    WHERE idfactura = @idFactura
 
 END
 GO
