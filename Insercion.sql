@@ -462,7 +462,7 @@ DECLARE @Fecha DATE = GETDATE()
 		END
 
 
-	INSERT INTO dbsl.Cobro (Monto, Fecha, Reembolso, MontoReembolso, SaldoFavor, idMetodoPago, idFactura)
+	INSERT INTO dbsl.Cobro (Monto, Fecha, MontoReembolso, SaldoFavor, idMetodoPago, idFactura)
 	VALUES (@Monto, @Fecha ,  @MontoReembolso, @SaldoFavor, @idMetodoPago, @idFactura)
 END
 GO
