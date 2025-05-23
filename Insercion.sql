@@ -615,7 +615,17 @@ CREATE PROCEDURE dbsl.GenerarFactura
 AS
 BEGIN
     SET NOCOUNT ON;
-
+	    IF (@idSocio IS NULL OR @idSocio <= 0)
+    BEGIN
+        RAISERROR('El ID de socio debe ser un número positivo.', 16, 1)
+        RETURN
+    END
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE idSocio = @id_socio)
+    BEGIN
+        RAISERROR('No se encontró un socio con ese ID.', 16, 1)
+        RETURN
+    END
+    BEGIN
     DECLARE @fechaActual DATE = GETDATE();
     DECLARE @fechaVencimiento DATE = DATEADD(DAY, 5, @fechaActual);
     DECLARE @idFactura INT;
