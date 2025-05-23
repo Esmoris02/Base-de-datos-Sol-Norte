@@ -780,3 +780,66 @@ BEGIN
 
 END
 GO
+
+----------Generacion de Factura--------------------
+CREATE PROCEDURE GenerarFactura
+    @idSocio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @fechaActual DATE = GETDATE();
+    DECLARE @fechaVencimiento DATE = DATEADD(DAY, 5, @fechaActual);
+    DECLARE @idFactura INT;
+
+    -- 1. Crear la factura
+    INSERT INTO Factura ( fechaEmision, fechaVencimiento, total)
+    VALUES (@idSocio, @fechaActual, @fechaVencimiento, 0);
+
+    SET @idFactura = SCOPE_IDENTITY();
+
+    -- 2. Agregar detalles de inscripción a actividades
+    INSERT INTO DetalleFactura (tipoItem, descripcion, monto, idFactura)
+    SELECT 
+        'Actividad',
+        'Inscripción a actividad: ' + A.nombreActividad,
+        A.costo,
+        @idFactura
+    FROM dbsl.Incripcion IA
+    INNER JOIN Clase C ON IA.idClase = C.idClase
+    INNER JOIN Actividad A ON C.idActividad = A.idActividad
+    WHERE IA.idSocio = @idSocio;
+
+    -- 3. Agregar detalles de inscripción a colonia
+    INSERT INTO DetalleFactura (tipoItem, descripcion, monto, idFactura)
+    SELECT 
+        'Colonia',
+        C.Nombre,
+        C.Costo,
+        @idFactura
+    FROM dbsl.Colonia
+    INNER JOIN 
+	dbsl.Inscripcion I ON @idSocio = I.idSocio
+	INNER JOIN 
+	dbsl.Colonia C ON I.idInscripcion = C.idInscripcion;
+
+    -- 4. Agregar detalles de reservas de SUM
+    INSERT INTO DetalleFactura (tipoItem, descripcion, monto, idFactura)
+    SELECT 
+        'SUM',
+        'SUM',
+        S.Precio,
+        @idFactura
+    FROM dbsl.Inscripcion
+	inner join dbsl.Inscripcion I ON @idSocio = I.idSocio
+	inner join dbsl.Reserva R on I.idReserva = R.idReserva
+	inner join dbsl.Suum S on R.idSum = R.idSum
+    -- 6. Actualizar total de factura
+    UPDATE Factura
+    SET total = (
+        SELECT SUM(monto)
+        FROM DetalleFactura
+        WHERE idFactura = @idFactura
+    )
+    WHERE idFactura = @idFactura;
+END;
