@@ -620,7 +620,7 @@ BEGIN
         RAISERROR('El ID de socio debe ser un número positivo.', 16, 1)
         RETURN
     END
-    IF NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE idSocio = @id_socio)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE idSocio = @idSocio)
     BEGIN
         RAISERROR('No se encontró un socio con ese ID.', 16, 1)
         RETURN
@@ -632,7 +632,7 @@ BEGIN
 
     -- 1. Crear la factura
     INSERT INTO Factura ( fechaEmision, fechaVencimiento, total)
-    VALUES (@idSocio, @fechaActual, @fechaVencimiento, 0);
+    VALUES (@fechaActual, @fechaVencimiento, 0);
 
     SET @idFactura = SCOPE_IDENTITY();
 
