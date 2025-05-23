@@ -1,88 +1,214 @@
 ---------INSERTAR CATEGORIA SOCIO-------------
 
 -- Menor: 0 a 12 años
-EXEC dbsl.InsertarCategoriaSocio 'Infantil', 0, 12
+--Se espera que se ingrese correctamente
+EXEC dbsl.InsertarCategoriaSocio 'Menor', 0, 12
 
 -- Cadete: 13 a 17 años
+--Se espera que se ingrese correctamente
 EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17
 
 -- Mayor: mayor a 18 años
+--Se espera que se ingrese correctamente
 EXEC dbsl.InsertarCategoriaSocio 'Adulto', 18, 64
 
+--Error esperado: 'El nombre de la categoria no es correcto'
+EXEC dbsl.InsertarCategoriaSocio '', 18, 64
 
+--Error esperado: 'La edad ingresada no es correcta'
+EXEC dbsl.InsertarCategoriaSocio 'Adulto', 0, 64
+
+--Error esperado:'El Nombre de Categoria ya existe.'
+EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17
 
 ---------INSERTAR GRUPO FAMILIAR-------------
+--Se espera que se ingrese correctamente
 EXEC dbsl.insertarGrupoFamiliar 'Laura González', 30111222
-
-EXEC dbsl.insertarGrupoFamiliar 'Carlos Pérez', 28444555
-
-EXEC dbsl.insertarGrupoFamiliar 'Verónica Díaz', 32500321
-
-EXEC dbsl.insertarGrupoFamiliar 'Juan Romero', 30005678
-
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarGrupoFamiliar 'Carlos Pérez', 34444555
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarGrupoFamiliar 'Juan Romero', 42005678
+--Error esperado:'Informacion ingresada incorrecta'
+EXEC dbsl.insertarGrupoFamiliar '', 45656668
+--Error esperado: 'Ya existe un responsable con ese DNI en otro grupo familiar' 
 EXEC dbsl.insertarGrupoFamiliar 'Marcelo González', 30111222
 
----------INSERTAR SOCIO-------------
--- Socio Menor
+---------INSEERTAR SOCIO-------------
+--Se espera que se inserte correctamente
 EXEC dbsl.InsertarSocio
     1001, 'Activo', 'Martina', 'López', '44123456', '2015-05-10',
     '1134567890', '1122334455', 'marti.lopez@gmail.com', 'OSDE', '123456789',
     1, 1
-
--- Socio Cadete
+--Error esperado "Ya existe un socio con ese número." (si se utilizó el anterior SP)
 EXEC dbsl.InsertarSocio
-    1002, 'Activo', 'Bruno', 'Martínez', '43111222', '2010-11-25',
+    1001, 'Activo', 'Martina', 'López', '44123456', '2015-05-10',
+    '1134567890', '1122334455', 'marti.lopez@gmail.com', 'OSDE', '123456789',
+    1, 1
+--Error esperado "Categoría de socio no válida." (es negativa)
+EXEC dbsl.InsertarSocio
+    1001, 'Activo', 'Martina', 'López', '44123456', '2015-05-10',
+    '1134567890', '1122334455', 'marti.lopez@gmail.com', 'OSDE', '123456789',
+    -1, 1
+--Error espeado "La fecha no puede ser nula, mayor a la actual o menor al año 1900"
+EXEC dbsl.InsertarSocio
+    1001, 'Activo', 'Martina', 'López', '44123456', '1800-05-10',
+    '1134567890', '1122334455', 'marti.lopez@gmail.com', 'OSDE', '123456789',
+    1, 1
+--Error esperado "'Estado, Nombre, Apellido, DNI, Telefono o Telefono de emergencia incorrectos'" (El DNI es null)
+EXEC dbsl.InsertarSocio
+    1002, 'Activo', 'Bruno', 'Martínez', '', '2010-11-25',
     '1145678912', '1133224455', 'bruno.martinez@gmail.com', 'Swiss Medical', '987654321',
     2, 2
-
--- Socio Mayor
+--Se espera una insercion correcta
 EXEC dbsl.InsertarSocio
     1003, 'Activo', 'Lucía', 'Pérez', '40123456', '1990-03-18',
     '1123456789', '1109876543', 'lucia.perez@gmail.com', 'Galeno', '1122334455',
     3, 3;
-
-
--- Socio inactivo
+-- Error esperado "Nro de socio Invalido" (no puede ser nulo)
+EXEC dbsl.InsertarSocio
+    -1, 'Activo', 'Lucía', 'Pérez', '40123456', '1990-03-18',
+    '1123256789', '1109876543', 'lucia.perez@gmail.com', 'Galeno', '1122334455',
+    3, 3;
+--Error esperado: Socio inactivo SIN OBRA SOCIAL
 EXEC dbsl.InsertarSocio
     1005, 'Inactivo', 'Ana', 'Fernández', '38999888', '1985-02-15',
-    '1161234567', '1145678912', 'ana.fer@gmail.com', 'OSDE', '4455667788',
+    '1161234567', '1145678912', 'ana.fer@gmail.com', '', '4455667788',
     3, 2; 
-
+--Error esperado "El correo electrónico debe ser válido (falta "@" o "." o tipo de correo)"
 EXEC dbsl.InsertarSocio
     2001,'Activo','Mariano','Ledesma','40112233','1995-04-18',
-	'1144556677','1133221100','mariano.ledesma@gmail.com','OSDE','123456789',3,NULL;
+	'1144556677','1133221100','','OSDE','123456789',3,NULL;
 
---------------INSERTAR SOCIO --------------
-EXEC dbsl.insertarUsuario 'admin1', 'activo', CONVERT(VARBINARY(256), 'Admin123!'), 'administrador', '2024-12-31', NULL
 
-EXEC dbsl.insertarUsuario 'profe.futbol', 'activo', CONVERT(VARBINARY(256), 'Futbol2024'), 'profesor', '2024-12-31', NULL
-
-EXEC dbsl.insertarUsuario 'lucia.perez', 'activo', CONVERT(VARBINARY(256), 'LuciaPass1'), 'socio', '2024-12-31', 1003
-
-EXEC dbsl.insertarUsuario 'juan.romero', 'inactivo', CONVERT(VARBINARY(256), 'Romero123'), 'socio', '2024-12-31', 1004
-
+--------------INSERTAR Usuario --------------
+--Error esperado "El rol ingresado no es válido. Debe ser: "administrador","profesor" o "socio""
+EXEC dbsl.insertarUsuario 'admin1', 'activo', CONVERT(VARBINARY(256), 'Admin123!'), 'ministro', '2024-12-31', NULL
+--Error esperado "La fecha no puede ser nula, mayor a la actual o menor al año 1900."
+EXEC dbsl.insertarUsuario 'profe.futbol', 'activo', CONVERT(VARBINARY(256), 'Futbol2024'), 'profesor', 'NULL', NULL
+--Error esperado "El socio asignado no existe"
+EXEC dbsl.insertarUsuario 'lucia.perez', 'activo', CONVERT(VARBINARY(256), 'LuciaPass1'), 'socio', '2024-12-31', -1
+--Error esperado: "Estado incorrecto. Establece "activo" o "inactivo""
+EXEC dbsl.insertarUsuario 'juan.romero', 'paz', CONVERT(VARBINARY(256), 'Romero123'), 'socio', '2024-12-31', 1004
+--Se espera que se inserte correctamente
+EXEC dbsl.insertarUsuario 'bruno.m', 'activo', CONVERT(VARBINARY(256), 'Cadete321'), 'socio', '2024-12-31', 1002
+--Error esperado "nombre de usuario incorrecto o Usuario ya existente"
 EXEC dbsl.insertarUsuario 'bruno.m', 'activo', CONVERT(VARBINARY(256), 'Cadete321'), 'socio', '2024-12-31', 1002
 
+
 -------------INSERTAR ACTIVIDAD--------------
-EXEC dbsl.InsertarActividad 'activo', 'Fútbol 11', 2500
-
-EXEC dbsl.InsertarActividad 'activo', 'Natación', 3000
-
-EXEC dbsl.InsertarActividad 'activo', 'Zumba', 1800
-
+--Error esperado: "El nombre de la actividad no puede estar vacío o ser muy corto."
+EXEC dbsl.InsertarActividad 'activo', '', 2500
+--Error esperado: "El costo de la actividad no es válido."
+EXEC dbsl.InsertarActividad 'activo', 'Natación', -3000
+--Error Esperado: "Estado incorrecto. Establece "activo" o "inactivo""
+EXEC dbsl.InsertarActividad 'empty', 'Zumba', 1800
+--Se espera que se inserte correctamente
 EXEC dbsl.InsertarActividad 'activo', 'Gimnasio Funcional', 2200
-
+--Se espera que se inserte correctamente
 EXEC dbsl.InsertarActividad 'inactivo', 'Tenis', 2000
 
 
 -------------INSERTAR CLASE---------------------
-EXEC dbsl.InsertarClase 'activo', 'Lunes', '09:00', 'Adulto', 1
-
-EXEC dbsl.InsertarClase 'activo', 'Martes', '10:30', 'Cadete', 2
-
+--Error esperado : "Ingresa un horario valido entre las 08:00 y 22:00 en intervalos de 30 min"
+EXEC dbsl.InsertarClase 'activo', 'Lunes', '03:00', 'Adulto', 1
+--Error esperado: "Ingresa un dia valido."( se debe ingresar un dia de la semana)
+EXEC dbsl.InsertarClase 'activo', 'Papafrita', '10:30', 'Cadete', 2
+--Se espera que se inserte correctamente
 EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Menor', 3
-
-EXEC dbsl.InsertarClase 'inactivo', 'Jueves', '15:00', 'Adulto', 1
-
+--Error esperado:"Ya existe una clase para esa actividad, día y horario."
+EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Menor', 3
+--Error esperado "Estado incorrecto. Usa "activo" o "inactivo".
+EXEC dbsl.InsertarClase 'empty', 'Jueves', '15:00', 'Adulto', 1
+--Se espera que se inserte correctamente
 EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Cadete', 2
+--Error esperado "La actividad especificada no existe."
+EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Cadete', 99
+--Error esperado: "Categoria invalida. Ingresa "Menor", "Cadete" o "Adulto"" (la categoria debe pertenecer a la especificada)
+EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Usuario', 2
+
+--------------INSERTAR PILETVERANO-------------------
+--Se espera que se inserte correctamente
+EXEC dbsl.insertarPiletaVerano '2025-06-01'
+--Error esperado:"Ya hay datos de pileta cargados para esa fecha"
+EXEC dbsl.insertarPiletaVerano '2025-06-01'
+--Se espera que se inserte correctamente
+EXEC dbsl.insertarPiletaVerano '2025-09-02'
+-- Error esperado "la fecha no puede ser nula" 
+EXEC dbsl.insertarPiletaVerano NULL
+-- Error esperado "la fecha no puede ser menor a la actual" 
+EXEC dbsl.insertarPiletaVerano '2024-01-01'
+--Se espera que se inserte correctamente
+EXEC dbsl.insertarPiletaVerano '2025-06-01'
+
+--------------INSERTAR INVITADO------------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarInvitado 'Matías', 'Fernández', '2025-06-01', 1, 1
+
+-- Error esperado: 'Ingrese nuevamente los datos para nombre y apellido'
+EXEC dbsl.insertarInvitado '', 'Rodríguez', '2025-06-01', 1, 1
+
+-- Error esperado: 'La fecha no puede ser nula'
+EXEC dbsl.insertarInvitado 'Carla', 'López', NULL, 1, 1
+
+-- Error esperado: 'La fecha no puede ser menor a la actual'
+EXEC dbsl.insertarInvitado 'Diego', 'Sosa', '2024-12-01', 1, 1
+
+-- Error esperado: 'La inscripcion no existe.'
+EXEC dbsl.insertarInvitado 'Laura', 'Gómez', '2025-06-01', 999, 1
+
+-- Error esperado: 'La fecha de pileta no existe.'
+EXEC dbsl.insertarInvitado 'Tomás', 'Díaz', '2025-06-01', 1, 999
+
+----------------INSERTAR METODO DE PAGO------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
+--Error esperado:'Metodo de pago ya existe.'
+EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
+
+----------------INSERTAR GENERACION FACTURA---------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.GenerarFactura 1
+--Error esperado: 'El ID de socio debe ser un número positivo.'
+EXEC dbsl.GenerarFactura 0
+--Error esperado: 'El ID de socio debe ser un número positivo.'
+EXEC dbsl.GenerarFactura -5;
+
+
+----------------INSERTAR COBRO----------------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarCobro 1000, 200, 50, 1, 123
+--Error esperado:'Metodo de pago inexistente.'
+EXEC dbsl.insertarCobro 1000, 0, 0, 9999, 123 
+--Error esperado:'Factura no existente.'
+EXEC dbsl.insertarCobro 1000, 0, 0, 1, 9999 
+
+----------------INSERTAR SUM------------------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 150
+--Error esperado:'El precio debe ser mayor a 0'
+EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 0
+--Error esperado:'Descripcion invalida. Minimo de 5 y maximo de 100'
+EXEC dbsl.InsertarSum @Descripcion = 'abc', @Precio = 100
+
+----------------INSERTAR RESERVA--------------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.InsertarReserva @Fecha = '2025-06-01', @Turno = 'Dia'
+--Error esperado:'Ese turno ya está reservado'
+EXEC dbsl.InsertarReserva @Fecha = '2025-06-01', @Turno = 'Dia'
+
+----------------INSERTAR INSCRIPCION-----------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.InsertarInscripcion 1, 1, '2025-06-01', NULL
+--Error esperado:'La clase no existe.'
+EXEC dbsl.InsertarInscripcion 1, 620, '2025-06-01', NULL
+--Error esperado:'La reserva especificada no existe.'
+EXEC dbsl.InsertarInscripcion 3, 2, '2025-08-01', 98
+
+
+
+
+
+
+
+
 
