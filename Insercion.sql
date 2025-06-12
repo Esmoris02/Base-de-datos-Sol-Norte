@@ -38,9 +38,9 @@ GO
 --Grupo Familiar-------------------------------------------------
 
 IF OBJECT_ID('dbs1.insertarGrupoFamiliar','P') IS NOT NULL
-DROP PROCEDURE dbs1.insertarGrupoFamiliar
+DROP PROCEDURE dbsl.insertarGrupoFamiliar
 GO
-CREATE PROCEDURE dbs1.insertarGrupoFamiliar(
+CREATE PROCEDURE dbsl.insertarGrupoFamiliar(
 @ResponsableNombre VARCHAR(50), 
 @DNI VARCHAR(20)
 )
@@ -114,12 +114,11 @@ BEGIN
 		RETURN
 	END
  
-	IF (CHARINDEX('@gmail.com', @Email) != 1 OR CHARINDEX('@outlook.com', @Email) > 1 OR 
-	CHARINDEX('@hotmail.com', @Email) != 1 OR CHARINDEX('@yahoo.com', @Email) != 1)
-		BEGIN
-			RAISERROR('El correo electrónico debe ser válido (falta "@" o "." o tipo de correo).', 16, 1)
-			RETURN
-		END
+	IF (@Email NOT LIKE '%@%.%' OR LEN(@Email) < 5)
+	BEGIN
+		RAISERROR('El correo electrónico ingresado no es válido.', 16, 1)
+		RETURN
+	END
  
  
 	IF EXISTS (SELECT 1 FROM dbsl.Socio WHERE NroSocio = @NroSocio)
@@ -185,7 +184,7 @@ BEGIN
 		RETURN
 	END
  
-	IF @Estado NOT IN ('activo,inactivo')
+	IF @Estado NOT IN ('activo','inactivo')
 	BEGIN 
 		RAISERROR ('Estado incorrecto. Establece "activo" o "inactivo"',16,1)
 		RETURN
@@ -217,7 +216,7 @@ GO
 --Actividad-------------------------------------------------
 
 IF OBJECT_ID('dbsl.InsertarActividad','P') IS NOT NULL
-DROP PROCEDURE dbsl.dbsl.InsertarActividad
+DROP PROCEDURE dbsl.InsertarActividad
 GO
 CREATE PROCEDURE dbsl.InsertarActividad
     @Estado VARCHAR(15),
@@ -801,7 +800,7 @@ CREATE PROCEDURE dbsl.borrarLogicoReserva
 AS
 BEGIN
     -- Verifica existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.Clase WHERE idClase = @idClase)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Reserva WHERE idReserva = @idReserva)
     BEGIN
         RAISERROR('No existe reserva con ese número.', 16, 1)
         RETURN
@@ -955,7 +954,7 @@ CREATE PROCEDURE dbsl.EliminarFactura
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idFactura = @idFactura)
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Factura WHERE idFactura = @idFactura)
     BEGIN
         RAISERROR('La factura indicada no existe', 16, 1)
         RETURN
