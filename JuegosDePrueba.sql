@@ -1,26 +1,32 @@
+
+use ClubSolNorte
+go
 ---------INSERTAR CATEGORIA SOCIO-------------
 
 -- Menor: 0 a 12 años
 --Se espera que se ingrese correctamente
-EXEC dbsl.InsertarCategoriaSocio 'Menor', 0, 12
+EXEC dbsl.InsertarCategoriaSocio 'Menor', 0, 12,100
 
 -- Cadete: 13 a 17 años
 --Se espera que se ingrese correctamente
-EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17
+EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17,550
 
 -- Mayor: mayor a 18 años
 --Se espera que se ingrese correctamente
-EXEC dbsl.InsertarCategoriaSocio 'Adulto', 18, 64
+EXEC dbsl.InsertarCategoriaSocio 'Adulto', 18, 64,10
 
 --Error esperado: 'El nombre de la categoria no es correcto'
 EXEC dbsl.InsertarCategoriaSocio '', 18, 64
 
 --Error esperado: 'La edad ingresada no es correcta'
-EXEC dbsl.InsertarCategoriaSocio 'Adulto', 0, 64
+EXEC dbsl.InsertarCategoriaSocio 'Adulto', 0, 64,1
 
 --Error esperado:'El Nombre de Categoria ya existe.'
-EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17
+EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17,10
 
+
+
+--select * from dbsl.CategoriaSocio
 ---------INSERTAR GRUPO FAMILIAR-------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.insertarGrupoFamiliar 'Laura González', 30111222
@@ -36,9 +42,9 @@ EXEC dbsl.insertarGrupoFamiliar 'Marcelo González', 30111222
 ---------INSEERTAR SOCIO-------------
 --Se espera que se inserte correctamente
 EXEC dbsl.InsertarSocio
-    1001, 'Activo', 'Martina', 'López', '44123456', '2015-05-10',
+    1001, 'Activo', 'Martina', 'López', '44123456', '2002-05-10',
     '1134567890', '1122334455', 'marti.lopez@gmail.com', 'OSDE', '123456789',
-    1, 1
+    3, NULL
 --Error esperado "Ya existe un socio con ese número." (si se utilizó el anterior SP)
 EXEC dbsl.InsertarSocio
     1001, 'Activo', 'Martina', 'López', '44123456', '2015-05-10',
@@ -79,7 +85,7 @@ EXEC dbsl.InsertarSocio
     2001,'Activo','Mariano','Ledesma','40112233','1995-04-18',
 	'1144556677','1133221100','','OSDE','123456789',3,NULL;
 
-
+--select * from dbsl.Socio
 --------------INSERTAR Usuario --------------
 --Error esperado "El rol ingresado no es válido. Debe ser: "administrador","profesor" o "socio""
 EXEC dbsl.insertarUsuario 'admin1', 'activo', CONVERT(VARBINARY(256), 'Admin123!'), 'ministro', '2024-12-31', NULL
@@ -107,14 +113,14 @@ EXEC dbsl.InsertarActividad 'activo', 'Gimnasio Funcional', 2200
 --Se espera que se inserte correctamente
 EXEC dbsl.InsertarActividad 'inactivo', 'Tenis', 2000
 
-
+--select * from dbsl.Actividad
 -------------INSERTAR CLASE---------------------
 --Error esperado : "Ingresa un horario valido entre las 08:00 y 22:00 en intervalos de 30 min"
 EXEC dbsl.InsertarClase 'activo', 'Lunes', '03:00', 'Adulto', 1
 --Error esperado: "Ingresa un dia valido."( se debe ingresar un dia de la semana)
 EXEC dbsl.InsertarClase 'activo', 'Papafrita', '10:30', 'Cadete', 2
 --Se espera que se inserte correctamente
-EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Menor', 3
+EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Adulto', 1
 --Error esperado:"Ya existe una clase para esa actividad, día y horario."
 EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Menor', 3
 --Error esperado "Estado incorrecto. Usa "activo" o "inactivo".
@@ -126,6 +132,7 @@ EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Cadete', 99
 --Error esperado: "Categoria invalida. Ingresa "Menor", "Cadete" o "Adulto"" (la categoria debe pertenecer a la especificada)
 EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Usuario', 2
 
+--select * from dbsl.Clase
 --------------INSERTAR PILETVERANO-------------------
 --Se espera que se inserte correctamente
 EXEC dbsl.insertarPiletaVerano '2025-06-01'
@@ -167,13 +174,17 @@ EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
 
 ----------------INSERTAR GENERACION FACTURA---------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.GenerarFactura 1
+EXEC dbsl.GenerarFactura 1001
 --Error esperado: 'El ID de socio debe ser un número positivo.'
 EXEC dbsl.GenerarFactura 0
 --Error esperado: 'El ID de socio debe ser un número positivo.'
 EXEC dbsl.GenerarFactura -5;
 
+--SELECT * FROM dbsl.Factura;
+--SELECT * FROM dbsl.DetalleFactura;
 
+--DELETE FROM dbsl.DetalleFactura;
+--DELETE FROM dbsl.Factura;
 ----------------INSERTAR COBRO----------------------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.insertarCobro 1000, 200, 50, 1, 123
@@ -198,13 +209,11 @@ EXEC dbsl.InsertarReserva @Fecha = '2025-06-01', @Turno = 'Dia'
 
 ----------------INSERTAR INSCRIPCION-----------------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.InsertarInscripcion 1, 1, '2025-06-01', NULL
+EXEC dbsl.InsertarInscripcion 1001, 1, '2025-06-01', NULL
 --Error esperado:'La clase no existe.'
 EXEC dbsl.InsertarInscripcion 1, 620, '2025-06-01', NULL
 --Error esperado:'La reserva especificada no existe.'
 EXEC dbsl.InsertarInscripcion 3, 2, '2025-08-01', 98
-
-
 
 
 

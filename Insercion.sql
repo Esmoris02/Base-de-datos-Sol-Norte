@@ -1,13 +1,15 @@
 
-
+use ClubSolNorte
+go
 --Categoria socio
 IF OBJECT_ID('dbsl.InsertarCategoriaSocio','P') IS NOT NULL
 DROP PROCEDURE dbsl.InsertarCategoriaSocio
 GO
-CREATE PROCEDURE dbsl.InsertarCategoriaSocio(
+CREATE or alter PROCEDURE dbsl.InsertarCategoriaSocio(
 	@NombreCategoria VARCHAR(50),
 	@EdadDesde INT,
-	@EdadHasta INT
+	@EdadHasta INT,
+	@Costo INT
 )
 AS
 BEGIN
@@ -22,6 +24,12 @@ BEGIN
 		RAISERROR ('La edad ingresada no es correcta',16,1)
 		RETURN
 	END
+
+	IF (@Costo < 0)
+	BEGIN 
+		RAISERROR ('El costo no puede ser negativo',16,1)
+		RETURN
+	END
  
 	  -- Verificar si ya existe una Categoria con ese nombre
     IF EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE NombreCategoria = @NombreCategoria)
@@ -30,8 +38,8 @@ BEGIN
         RETURN
     END
  
-	INSERT INTO dbsl.CategoriaSocio(NombreCategoria,EdadDesde,EdadHasta)
-	VALUES (@NombreCategoria,@EdadDesde,@EdadHasta)
+	INSERT INTO dbsl.CategoriaSocio(NombreCategoria,EdadDesde,EdadHasta,Costo)
+	VALUES (@NombreCategoria,@EdadDesde,@EdadHasta,@Costo)
  
 END
 GO
@@ -679,7 +687,17 @@ BEGIN
     INNER JOIN dbsl.Suum S ON R.idSum = S.idSum
     WHERE I.NroSocio = @idSocio;
 
-    -- 5. Total
+	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+	SELECT 
+		'Membresía',
+		'Cuota mensual por categoría: ' + cs.NombreCategoria,
+		cs.Costo,
+		@idFactura
+	FROM dbsl.Socio s
+	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
+	WHERE s.NroSocio = @idSocio;
+
+    -- 6. Total
     UPDATE dbsl.Factura
     SET Total = (
         SELECT SUM(Monto)

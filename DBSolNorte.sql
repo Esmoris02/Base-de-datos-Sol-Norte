@@ -9,9 +9,10 @@ CREATE TABLE dbsl.CategoriaSocio (
     idCategoria INT IDENTITY(1,1) PRIMARY KEY,
     NombreCategoria VARCHAR(50),
     EdadDesde INT,
-    EdadHasta INT
+    EdadHasta INT,
+	Costo INT
 );
- 
+
 CREATE TABLE dbsl.GrupoFamiliar (
     idGrupo INT IDENTITY(1,1) PRIMARY KEY,
     ResponsableNombre VARCHAR(50),
@@ -159,7 +160,7 @@ CREATE TABLE dbsl.Colonia(
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
 );
  
---drop table dbsl.Colonia,dbsl.DetalleFactura,dbsl.Cobro,dbsl.Factura,dbsl.MetodoPago,dbsl.Invitado,dbsl.PiletaVerano,dbsl.Inscripcion,dbsl.Reserva,dbsl.Suum,dbsl.Clase,dbsl.Actividad,dbsl.Usuario,dbsl.Socio
+--drop table dbsl.Colonia,dbsl.DetalleFactura,dbsl.Cobro,dbsl.Factura,dbsl.MetodoPago,dbsl.Invitado,dbsl.Inscripcion,dbsl.Reserva,dbsl.Suum,dbsl.Clase,dbsl.Actividad,dbsl.Usuario,dbsl.Socio,dbsl.CategoriaSocio,dbsl.GrupoFamiliar
 
 
 
