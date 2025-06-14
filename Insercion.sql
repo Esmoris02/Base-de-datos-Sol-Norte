@@ -686,7 +686,7 @@ BEGIN
     INNER JOIN dbsl.Reserva R ON I.idReserva = R.idReserva
     INNER JOIN dbsl.Suum S ON R.idSum = S.idSum
     WHERE I.NroSocio = @idSocio;
-
+	-- 5. Membresía
 	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
 	SELECT 
 		'Membresía',
@@ -697,6 +697,46 @@ BEGIN
 	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
 	WHERE s.NroSocio = @idSocio;
 
+	-- DESCUENTO Multiples Actividades
+	DECLARE @CantidadActividades INT;
+	SELECT @CantidadActividades = COUNT(*)
+	FROM dbsl.Inscripcion I
+	INNER JOIN dbsl.Clase C ON I.idClase = C.idClase
+	WHERE I.NroSocio = @idSocio;
+
+	IF @CantidadActividades > 1
+	BEGIN
+		DECLARE @DescuentoActividades INT;
+		SELECT @DescuentoActividades = CAST(SUM(Monto) * 0.10 AS INT)
+		FROM dbsl.DetalleFactura
+		WHERE idFactura = @idFactura AND tipoItem = 'Actividad';
+
+		INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+		VALUES ('Descuento', '10% por múltiples actividades', -@DescuentoActividades, @idFactura);
+	END
+
+	-- DESCUENTO grupo familiar
+	DECLARE @idGrupoFamiliar INT;
+	SELECT @idGrupoFamiliar = idGrupoFamiliar FROM dbsl.Socio WHERE NroSocio = @idSocio;
+
+	IF @idGrupoFamiliar IS NOT NULL
+	BEGIN
+		DECLARE @CantidadEnGrupo INT;
+		SELECT @CantidadEnGrupo = COUNT(*) 
+		FROM dbsl.Socio 
+		WHERE idGrupoFamiliar = @idGrupoFamiliar;
+
+		IF @CantidadEnGrupo > 1
+		BEGIN
+			DECLARE @DescuentoFamiliar INT;
+			SELECT @DescuentoFamiliar = CAST(SUM(Monto) * 0.15 AS INT)
+			FROM dbsl.DetalleFactura
+			WHERE idFactura = @idFactura AND tipoItem <> 'Actividad';
+
+			INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+			VALUES ('Descuento', '15% por grupo familiar', -@DescuentoFamiliar, @idFactura);
+		END
+	END
     -- 6. Total
     UPDATE dbsl.Factura
     SET Total = (
