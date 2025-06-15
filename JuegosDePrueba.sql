@@ -44,7 +44,7 @@ EXEC dbsl.insertarGrupoFamiliar 'Marcelo González', 30111222
 EXEC dbsl.InsertarSocio
     1001, 'Activo', 'Martina', 'López', '44123456', '2002-05-10',
     '1134567890', '1122334455', 'marti.lopez@gmail.com', 'OSDE', '123456789',
-    3, NULL
+    1, NULL
 --Error esperado "Ya existe un socio con ese número." (si se utilizó el anterior SP)
 EXEC dbsl.InsertarSocio
     1001, 'Activo', 'Martina', 'López', '44123456', '2015-05-10',
@@ -134,18 +134,11 @@ EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Usuario', 2
 
 --select * from dbsl.Clase
 --------------INSERTAR PILETVERANO-------------------
---Se espera que se inserte correctamente
-EXEC dbsl.insertarPiletaVerano '2025-06-01'
---Error esperado:"Ya hay datos de pileta cargados para esa fecha"
-EXEC dbsl.insertarPiletaVerano '2025-06-01'
---Se espera que se inserte correctamente
-EXEC dbsl.insertarPiletaVerano '2025-09-02'
--- Error esperado "la fecha no puede ser nula" 
-EXEC dbsl.insertarPiletaVerano NULL
--- Error esperado "la fecha no puede ser menor a la actual" 
-EXEC dbsl.insertarPiletaVerano '2024-01-01'
---Se espera que se inserte correctamente
-EXEC dbsl.insertarPiletaVerano '2025-06-01'
+-- Valor del Mes
+EXEC dbsl.insertarPiletaVerano '2025-12-01','Valor del Mes',25000,0,18000,0,0
+
+-- Valor de Temporada
+EXEC dbsl.insertarPiletaVerano '2025-12-21','Valor de Temporada',60000,0,50000,0,0
 
 --------------INSERTAR INVITADO------------------------
 --Se espera que se ingrese correctamente

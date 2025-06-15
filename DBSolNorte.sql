@@ -33,6 +33,7 @@ CREATE TABLE dbsl.Socio (
     NumeroObraSocial VARCHAR(50),
     idCategoria INT,
     idGrupoFamiliar INT,
+	SaldoFavor INT,
     FOREIGN KEY (idCategoria) REFERENCES dbsl.CategoriaSocio(idCategoria),
     FOREIGN KEY (idGrupoFamiliar) REFERENCES dbsl.GrupoFamiliar(idGrupo)
 );
@@ -93,8 +94,11 @@ CREATE TABLE dbsl.Inscripcion (
 CREATE TABLE dbsl.PiletaVerano(
     idPileta INT IDENTITY(1,1) PRIMARY KEY,
     Fecha DATE,
-    CostoSocio INT DEFAULT 1500,
-    CostoInvitado INT DEFAULT 3000,
+	TipoDePase VARCHAR(20), -- Dia, mes , temporada
+    CostoSocioAdulto INT,
+    CostoInvitadoAdulto INT,
+	CostoSocioMenor INT,
+    CostoInvitadoMenor INT,
     Lluvia BIT NOT NULL DEFAULT 0
 );
  
@@ -131,7 +135,6 @@ CREATE TABLE dbsl.Cobro (
     Fecha DATE,
     Reembolso BIT NOT NULL DEFAULT 0,
     MontoReembolso INT,
-    SaldoFavor INT,
     idMetodoPago INT,
     idFactura INT,
     FOREIGN KEY (idMetodoPago) REFERENCES dbsl.MetodoPago(idMetodoPago),

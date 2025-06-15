@@ -165,8 +165,8 @@ BEGIN
     END
 
     -- Inserción final
-    INSERT INTO dbsl.Socio (NroSocio, Estado, Nombre, Apellido, Dni, FechaNac,Telefono, TelefonoEmergencia, Email,ObraSocial, NumeroObraSocial, idCategoria, idGrupoFamiliar)
-    VALUES (@NroSocio, @Estado, @Nombre, @Apellido, @Dni, @FechaNac,@Telefono, @TelefonoEmergencia, @Email,@ObraSocial, @NumeroObraSocial, @idCategoria, @idGrupoFamiliar)
+    INSERT INTO dbsl.Socio (NroSocio, Estado, Nombre, Apellido, Dni, FechaNac,Telefono, TelefonoEmergencia, Email,ObraSocial, NumeroObraSocial, idCategoria, idGrupoFamiliar, SaldoFavor)
+    VALUES (@NroSocio, @Estado, @Nombre, @Apellido, @Dni, @FechaNac,@Telefono, @TelefonoEmergencia, @Email,@ObraSocial, @NumeroObraSocial, @idCategoria, @idGrupoFamiliar,0)
 END
 GO
 
@@ -317,34 +317,46 @@ GO
 
 --PiletaVerano-------------------------------------------------
 
-IF OBJECT_ID('dbsl.insertarPiletaVerano','P') IS NOT NULL
-DROP PROCEDURE dbsl.insertarPiletaVerano
+IF OBJECT_ID('dbsl.insertarPiletaVerano', 'P') IS NOT NULL
+DROP PROCEDURE dbsl.insertarPiletaVerano;
 GO
+
 CREATE PROCEDURE dbsl.insertarPiletaVerano
-	@Fecha DATE
+    @Fecha DATE,
+    @TipoDePase VARCHAR(20),
+    @CostoSocioAdulto INT,
+    @CostoInvitadoAdulto INT,
+    @CostoSocioMenor INT,
+    @CostoInvitadoMenor INT,
+    @Lluvia BIT = 0
 AS
 BEGIN
-	IF @Fecha IS NULL 
-		BEGIN
-			RAISERROR('La fecha no puede ser nula', 16, 1)
-			RETURN
-		END
+    SET NOCOUNT ON;
+	 -- Validación de tipo de pase
+    IF @TipoDePase NOT IN ('Pase del Día', 'Pase del Mes', 'Pase de Temporada')
+    BEGIN
+        RAISERROR('El tipo de pase debe ser: Valor del Día, Valor del Mes o Valor de Temporada.', 16, 1)
+        RETURN
+    END
+    -- Validacion de la fecha
+    IF @Fecha IS NULL OR @Fecha < CAST(GETDATE() AS DATE)
+    BEGIN
+        RAISERROR('La fecha debe ser válida y no menor a hoy.', 16, 1)
+        RETURN
+    END
 
-	IF @Fecha < GETDATE() 
-		BEGIN
-			RAISERROR('La fecha no puede ser menor a la actual', 16, 1)
-			RETURN
-		END
-
-	IF EXISTS (SELECT 1 FROM dbsl.PiletaVerano WHERE Fecha = @Fecha)
-		BEGIN
-			RAISERROR('Ya hay datos de pileta cargados para esa fecha.', 16, 1)
-			RETURN
-		END
- 
-	INSERT INTO dbsl.PiletaVerano (Fecha)
-	VALUES (@Fecha)
-		
+    INSERT INTO dbsl.PiletaVerano (
+        Fecha, TipoDePase, 
+        CostoSocioAdulto, CostoInvitadoAdulto,
+        CostoSocioMenor, CostoInvitadoMenor,
+        Lluvia
+    )
+    VALUES (
+        @Fecha, @TipoDePase, 
+        @CostoSocioAdulto, @CostoInvitadoAdulto,
+        @CostoSocioMenor, @CostoInvitadoMenor,
+        @Lluvia
+    );
 END
 GO
 
@@ -446,15 +458,25 @@ GO
 IF OBJECT_ID('dbsl.insertarCobro','P') IS NOT NULL
 DROP PROCEDURE dbsl.insertarCobro
 GO
+-- Lo que me me permite este procedure es poder registrar los distintos cobros. Ademas si se le devuelve plata al cliete
+-- también queda registrado. Por ejemplo, si me paga con un billete de 10.000 y la factura es de 6.000, esto queda registrado como
+--queda registrado como 6000 de cobro y 4000 de reenbolso
 CREATE PROCEDURE dbsl.insertarCobro
 	@Monto INT,
-	--@Fecha DATE, --LE PONGO LA FECHA DEL DIA EN QUE LO PAGA EN REALIDAD, ENTONCES SE LO DECLARO
 	@MontoReembolso INT = 0,
-	@SaldoFavor INT = 0,
 	@idMetodoPago INT,
 	@idFactura INT
 AS
 BEGIN
+SET NOCOUNT ON;
+
+    -- Validaciones básicas
+    IF @Monto < 0 OR @MontoReembolso < 0
+    BEGIN
+        RAISERROR('Los montos no pueden ser negativos.', 16, 1)
+        RETURN
+    END
+
 DECLARE @Fecha DATE = GETDATE()
 
 	IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idMetodoPago = @idMetodoPago)
@@ -467,10 +489,47 @@ DECLARE @Fecha DATE = GETDATE()
 			RAISERROR('Factura no existente.', 16, 1)
 			RETURN
 		END
+	--Obtengo información del total
+	DECLARE @TotalFactura INT, @NroSocio INT, @idInscripcion INT;
+    SELECT 
+        @TotalFactura = Total,
+        @idInscripcion = idInscripcion --siempre es null, creo que esta de mas esto esto
+    FROM dbsl.Factura
+    WHERE idFactura = @idFactura;
 
+    SELECT @NroSocio = NroSocio
+    FROM dbsl.Inscripcion
+    WHERE idInscripcion = @idInscripcion;
 
-	INSERT INTO dbsl.Cobro (Monto, Fecha, MontoReembolso, SaldoFavor, idMetodoPago, idFactura)
-	VALUES (@Monto, @Fecha ,  @MontoReembolso, @SaldoFavor, @idMetodoPago, @idFactura)
+	-- Estoy insertando en cobro los datos. Si es un reembolso se pone en 1 el reenbolso y se espesifica
+	INSERT INTO dbsl.Cobro (Monto, Fecha, Reembolso, MontoReembolso, idMetodoPago, idFactura)
+    VALUES (@Monto, GETDATE(), 
+            CASE WHEN @MontoReembolso > 0 THEN 1 ELSE 0 END,
+            @MontoReembolso, 
+            @idMetodoPago, 
+            @idFactura)
+	--Calculo lo que cobré hasta ahora
+	DECLARE @TotalCobrado INT;
+    SELECT @TotalCobrado = SUM(Monto - MontoReembolso)
+    FROM dbsl.Cobro
+    WHERE idFactura = @idFactura;
+	--Si el dinero acumulado hasta ahora ya satisface la factura, la signo como pagada
+	IF @TotalCobrado >= @TotalFactura
+    BEGIN
+        UPDATE dbsl.Factura
+        SET Estado = 'Pagada'
+        WHERE idFactura = @idFactura;
+    END
+	--Si me exedí, lo agrego a saldo a favor
+	DECLARE @Excedente INT = @TotalCobrado - @TotalFactura;
+
+    IF @Excedente > 0 AND @NroSocio IS NOT NULL
+    BEGIN
+        UPDATE dbsl.Socio
+        SET SaldoFavor = ISNULL(SaldoFavor, 0) + @Excedente
+        WHERE NroSocio = @NroSocio;
+    END
+
 END
 GO
 
