@@ -86,9 +86,11 @@ CREATE TABLE dbsl.Inscripcion (
     idClase INT,
     FechaIn DATE,
     idReserva INT,
+	idPileta INT,
     FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio),
     FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
-    FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva)
+    FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva),
+	FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta)
 );
  
 CREATE TABLE dbsl.PiletaVerano(

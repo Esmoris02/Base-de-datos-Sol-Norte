@@ -643,31 +643,55 @@ DROP PROCEDURE dbsl.InsertarInscripcion
 GO
 CREATE PROCEDURE dbsl.InsertarInscripcion
     @NroSocio INT,
-    @idClase INT,
-    @FechaIn DATE,
-    @idReserva INT = NULL
+    @idClase INT = NULL,
+    @idReserva INT = NULL,
+    @idPileta INT = NULL,
+    @FechaIn DATE
 AS
 BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar que el socio exista
     IF NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE NroSocio = @NroSocio)
     BEGIN
-        RAISERROR('El socio no existe.', 16, 1)
-        RETURN
+        RAISERROR('El socio no existe.', 16, 1);
+        RETURN;
     END
- 
-    IF NOT EXISTS (SELECT 1 FROM dbsl.Clase WHERE idClase = @idClase)
+
+    -- Validar que solo se asigne un tipo de Item a la inscripcion
+    DECLARE @CantidadTipos INT = 
+        ISNULL(IIF(@idClase IS NOT NULL, 1, 0), 0) +
+        ISNULL(IIF(@idReserva IS NOT NULL, 1, 0), 0) +
+        ISNULL(IIF(@idPileta IS NOT NULL, 1, 0), 0);
+
+    IF @CantidadTipos <> 1
     BEGIN
-        RAISERROR('La clase no existe.', 16, 1)
-        RETURN
+        RAISERROR('Debe especificar exactamente uno entre: idClase, idReserva o idPileta.', 16, 1);
+        RETURN;
     END
- 
+
+    -- Validar que esxiste la clase a la que me quiero anotar
+    IF @idClase IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbsl.Clase WHERE idClase = @idClase)
+    BEGIN
+        RAISERROR('La clase indicada no existe.', 16, 1);
+        RETURN;
+    END
+	-- Valida, si me quiero anotar a la reserva, que exista
     IF @idReserva IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbsl.Reserva WHERE idReserva = @idReserva)
     BEGIN
-        RAISERROR('La reserva especificada no existe.', 16, 1)
-        RETURN
+        RAISERROR('La reserva indicada no existe.', 16, 1);
+        RETURN;
     END
- 
-    INSERT INTO dbsl.Inscripcion (NroSocio, idClase, FechaIn, idReserva)
-    VALUES (@NroSocio, @idClase, @FechaIn, @idReserva)
+	-- Valida, si me quiero anotar a la pileta, que exista
+    IF @idPileta IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbsl.PiletaVerano WHERE idPileta = @idPileta)
+    BEGIN
+        RAISERROR('La pileta indicada no existe.', 16, 1);
+        RETURN;
+    END
+
+    -- Insertar inscripción
+    INSERT INTO dbsl.Inscripcion (NroSocio, idClase, idReserva, idPileta, FechaIn)
+    VALUES (@NroSocio, @idClase, @idReserva, @idPileta, @FechaIn);
 END
 GO
 
