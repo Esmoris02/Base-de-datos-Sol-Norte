@@ -73,13 +73,21 @@ CREATE TABLE dbsl.Suum (
  
 CREATE TABLE dbsl.Reserva (
     idReserva INT IDENTITY(1,1) PRIMARY KEY,
-    Estado VARCHAR(15),
-    Fecha DATE,
-    Turno VARCHAR(20),
     idSum INT,
+    FechaReserva DATE,
+    HoraInicio TIME,
+    HoraFin TIME,
     FOREIGN KEY (idSum) REFERENCES dbsl.Suum(idSum)
 );
- 
+
+ CREATE TABLE dbsl.Colonia(
+    idColonia INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(20),
+	Descripcion VARCHAR(255),
+    Costo INT ,
+    fechaInicio Date,
+    fechaFin Date
+);
 CREATE TABLE dbsl.Inscripcion (
     idInscripcion INT IDENTITY(1,1) PRIMARY KEY,
     NroSocio INT,
@@ -87,13 +95,15 @@ CREATE TABLE dbsl.Inscripcion (
     FechaIn DATE,
     idReserva INT,
 	idPileta INT,
+	idColonia INT,
     FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio),
     FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
     FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva),
-	FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta)
+	FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta),
+	FOREIGN KEY (idColonia) REFERENCES dbsl.Colonia(idColonia)
 );
  
-CREATE TABLE dbsl.PiletaVerano(
+create TABLE dbsl.PiletaVerano(
     idPileta INT IDENTITY(1,1) PRIMARY KEY,
     Fecha DATE,
 	TipoDePase VARCHAR(20), -- Dia, mes , temporada
@@ -103,7 +113,7 @@ CREATE TABLE dbsl.PiletaVerano(
     CostoInvitadoMenor INT,
     Lluvia BIT NOT NULL DEFAULT 0
 );
- 
+
 CREATE TABLE dbsl.Invitado (
     idInvitado INT IDENTITY(1,1) PRIMARY KEY,
     Nombre VARCHAR(50),
@@ -154,19 +164,9 @@ CREATE TABLE dbsl.DetalleFactura (
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
 );
  
-CREATE TABLE dbsl.Colonia(
-    idColonia INT IDENTITY(1,1),
-    Nombre VARCHAR(20) DEFAULT 'Colonia',
-    Costo INT DEFAULT 1000,
-    fechaInicio VARCHAR(5) DEFAULT '21-12',
-    fechaFin VARCHAR(5) DEFAULT '20-03',
-    idInscripcion INT,
-    CONSTRAINT PKColonia PRIMARY KEY(idColonia, idInscripcion),
-    FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
-);
+
  
 --drop table dbsl.Colonia,dbsl.DetalleFactura,dbsl.Cobro,dbsl.Factura,dbsl.MetodoPago,dbsl.Invitado,dbsl.Inscripcion,dbsl.Reserva,dbsl.Suum,dbsl.Clase,dbsl.Actividad,dbsl.Usuario,dbsl.Socio,dbsl.CategoriaSocio,dbsl.GrupoFamiliar
-
 
 
 

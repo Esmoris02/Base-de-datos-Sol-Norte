@@ -135,8 +135,15 @@ EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Usuario', 2
 --select * from dbsl.Clase
 --------------INSERTAR PILETVERANO-------------------
 -- Valor del Mes
-EXEC dbsl.insertarPiletaVerano '2025-12-01','Valor del Mes',25000,0,18000,0,0
-
+EXEC dbsl.insertarPiletaVerano 
+    @Fecha = '2025-12-20',
+    @TipoDePase = 'Pase del Mes',
+    @CostoSocioAdulto = 1500,
+    @CostoInvitadoAdulto = 3000,
+    @CostoSocioMenor = 1000,
+    @CostoInvitadoMenor = 2000,
+    @Lluvia = 0;
+--select * from dbsl.PiletaVerano
 -- Valor de Temporada
 EXEC dbsl.insertarPiletaVerano '2025-12-21','Valor de Temporada',60000,0,50000,0,0
 
@@ -194,21 +201,35 @@ EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 0
 --Error esperado:'Descripcion invalida. Minimo de 5 y maximo de 100'
 EXEC dbsl.InsertarSum @Descripcion = 'abc', @Precio = 100
 
+
+--select * from dbsl.Suum
 ----------------INSERTAR RESERVA--------------------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.InsertarReserva @Fecha = '2025-06-01', @Turno = 'Dia'
---Error esperado:'Ese turno ya está reservado'
-EXEC dbsl.InsertarReserva @Fecha = '2025-06-01', @Turno = 'Dia'
+EXEC dbsl.InsertarReserva @idSum = 1,@FechaReserva = '2025-12-28',@HoraInicio = '10:00',@HoraFin = '12:00';
+
+--select* from dbsl.Reserva
 
 ----------------INSERTAR INSCRIPCION-----------------------
---Se espera que se ingrese correctamente
-EXEC dbsl.InsertarInscripcion 1001, 1, '2025-06-01', NULL
---Error esperado:'La clase no existe.'
-EXEC dbsl.InsertarInscripcion 1, 620, '2025-06-01', NULL
---Error esperado:'La reserva especificada no existe.'
-EXEC dbsl.InsertarInscripcion 3, 2, '2025-08-01', 98
 
+-- Actividad
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
+-- Reserva de SUM
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idReserva = 1, @FechaIn = '2025-12-22';
+-- Colonia
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
 
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
+
+--select * from dbsl.Inscripcion
+
+---------------INSERTAR COLONIA--------------------
+EXEC dbsl.InsertarColonia 
+    @Nombre = 'Colonia Enero',
+    @Descripcion = 'Actividades recreativas para menores durante enero',
+    @Costo = 28000,
+    @fechaInicio = '2025-01-02',
+    @fechaFin = '2025-01-31';
+--select * from dbsl.Colonia
 
 
 

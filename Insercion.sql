@@ -335,7 +335,7 @@ BEGIN
 	 -- Validación de tipo de pase
     IF @TipoDePase NOT IN ('Pase del Día', 'Pase del Mes', 'Pase de Temporada')
     BEGIN
-        RAISERROR('El tipo de pase debe ser: Valor del Día, Valor del Mes o Valor de Temporada.', 16, 1)
+        RAISERROR('El tipo de pase debe ser: Pase del Día, Pase del Mes o Pase de Temporada.', 16, 1)
         RETURN
     END
     -- Validacion de la fecha
@@ -606,36 +606,105 @@ GO
 
 --Reserva-------------------------------------------------
 
-IF OBJECT_ID('dbsl.InsertarReserva','P') IS NOT NULL
-DROP PROCEDURE dbsl.InsertarReserva
+IF OBJECT_ID('dbsl.InsertarReserva', 'P') IS NOT NULL
+DROP PROCEDURE dbsl.InsertarReserva;
 GO
-CREATE PROCEDURE dbsl.InsertarReserva(
-    @Fecha DATE,  
-    @Turno VARCHAR(20)
-)
+
+CREATE PROCEDURE dbsl.InsertarReserva
+    @idSum INT,
+    @FechaReserva DATE,
+    @HoraInicio TIME,
+    @HoraFin TIME
 AS
 BEGIN
-DECLARE @Estado VARCHAR(15)
-DECLARE @idSum INT=1      
-	IF EXISTS (
-        SELECT 1 FROM dbsl.Reserva
-        WHERE Fecha = @Fecha
-          AND Turno = @Turno
+    SET NOCOUNT ON;
+
+    -- Validar existencia del SUM
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Suum WHERE idSum = @idSum)
+    BEGIN
+        RAISERROR('El SUM indicado no existe.', 16, 1)
+        RETURN;
+    END
+
+    -- Validar fechas y horas
+    IF @FechaReserva IS NULL OR @FechaReserva < CAST(GETDATE() AS DATE)
+    BEGIN
+        RAISERROR('La fecha de reserva debe ser igual o posterior a hoy.', 16, 1)
+        RETURN;
+    END
+
+    IF @HoraInicio IS NULL OR @HoraFin IS NULL OR @HoraInicio >= @HoraFin
+    BEGIN
+        RAISERROR('La hora de inicio debe ser anterior a la hora de fin.', 16, 1)
+        RETURN;
+    END
+
+    -- Validar que no haya superposición con otras reservas del mismo SUM
+    IF EXISTS (
+        SELECT 1
+        FROM dbsl.Reserva
+        WHERE idSum = @idSum
+          AND FechaReserva = @FechaReserva
+          AND (
+                (@HoraInicio < HoraFin AND @HoraFin > HoraInicio)
+             )
     )
-		 BEGIN
-			RAISERROR('Ese turno ya está reservado', 16, 1)
-			RETURN
-		END
-	ELSE
-		BEGIN 
-			SET @Estado = 'Reservado'
-		END
-	
-    INSERT INTO dbsl.Reserva (Fecha, Turno, Estado,idSum)
-    VALUES (@Fecha, @Turno, @Estado,@idSum)
+    BEGIN
+        RAISERROR('El SUM ya está reservado en ese rango horario.', 16, 1)
+        RETURN;
+    END
+
+    -- Insertar reserva
+    INSERT INTO dbsl.Reserva (idSum, FechaReserva, HoraInicio, HoraFin)
+    VALUES (@idSum, @FechaReserva, @HoraInicio, @HoraFin);
 END
 GO
 
+----Colonia------
+IF OBJECT_ID('dbsl.InsertarColonia', 'P') IS NOT NULL
+DROP PROCEDURE dbsl.InsertarColonia;
+GO
+
+CREATE PROCEDURE dbsl.InsertarColonia
+    @Nombre VARCHAR(20),
+    @Descripcion VARCHAR(255),
+    @Costo INT,
+    @fechaInicio DATE,
+    @fechaFin DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validaciones básicas
+    IF LEN(@Nombre) < 3
+    BEGIN
+        RAISERROR('El nombre de la colonia debe tener al menos 3 caracteres.', 16, 1);
+        RETURN;
+    END
+
+    IF @Costo <= 0
+    BEGIN
+        RAISERROR('El costo debe ser un valor positivo.', 16, 1);
+        RETURN;
+    END
+
+    IF @fechaInicio IS NULL OR @fechaFin IS NULL
+    BEGIN
+        RAISERROR('Las fechas de inicio y fin no pueden ser nulas.', 16, 1);
+        RETURN;
+    END
+
+    IF @fechaInicio > @fechaFin
+    BEGIN
+        RAISERROR('La fecha de inicio no puede ser posterior a la fecha de fin.', 16, 1);
+        RETURN;
+    END
+
+    -- Inserción
+    INSERT INTO dbsl.Colonia (Nombre, Descripcion, Costo, fechaInicio, fechaFin)
+    VALUES (@Nombre, @Descripcion, @Costo, @fechaInicio, @fechaFin);
+END
+GO
 --Inscripcion-------------------------------------------------
 
 IF OBJECT_ID('dbsl.InsertarInscripcion','P') IS NOT NULL
@@ -646,6 +715,7 @@ CREATE PROCEDURE dbsl.InsertarInscripcion
     @idClase INT = NULL,
     @idReserva INT = NULL,
     @idPileta INT = NULL,
+	@idColonia INT = NULL,
     @FechaIn DATE
 AS
 BEGIN
@@ -662,11 +732,12 @@ BEGIN
     DECLARE @CantidadTipos INT = 
         ISNULL(IIF(@idClase IS NOT NULL, 1, 0), 0) +
         ISNULL(IIF(@idReserva IS NOT NULL, 1, 0), 0) +
-        ISNULL(IIF(@idPileta IS NOT NULL, 1, 0), 0);
+        ISNULL(IIF(@idPileta IS NOT NULL, 1, 0), 0) +
+		ISNULL(IIF(@idColonia IS NOT NULL, 1, 0), 0);
 
     IF @CantidadTipos <> 1
     BEGIN
-        RAISERROR('Debe especificar exactamente uno entre: idClase, idReserva o idPileta.', 16, 1);
+        RAISERROR('Debe especificar exactamente uno entre: Clase, Reserva ,Pileta o Colonia.', 16, 1);
         RETURN;
     END
 
@@ -688,10 +759,15 @@ BEGIN
         RAISERROR('La pileta indicada no existe.', 16, 1);
         RETURN;
     END
+	 IF @idColonia IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbsl.Colonia WHERE idColonia = @idColonia)
+    BEGIN
+        RAISERROR('La colonia no existe.', 16, 1);
+        RETURN;
+    END
 
     -- Insertar inscripción
-    INSERT INTO dbsl.Inscripcion (NroSocio, idClase, idReserva, idPileta, FechaIn)
-    VALUES (@NroSocio, @idClase, @idReserva, @idPileta, @FechaIn);
+    INSERT INTO dbsl.Inscripcion (NroSocio, idClase, idReserva, idPileta,idColonia, FechaIn)
+    VALUES (@NroSocio, @idClase, @idReserva, @idPileta,@idColonia, @FechaIn);
 END
 GO
 
@@ -749,14 +825,14 @@ BEGIN
 
     -- 3. Colonia
     INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
-    SELECT 
-        'Colonia',
-        C.Nombre,
-        C.Costo,
-        @idFactura
-    FROM dbsl.Inscripcion I
-    INNER JOIN dbsl.Colonia C ON I.idInscripcion = C.idInscripcion
-    WHERE I.NroSocio = @idSocio;
+	SELECT 
+		'Colonia',
+		C.Descripcion,
+		C.Costo,
+		@idFactura
+	FROM dbsl.Inscripcion I
+	JOIN dbsl.Colonia C ON I.idColonia = C.idColonia
+	WHERE I.NroSocio = @idSocio AND I.idColonia IS NOT NULL;
 
     -- 4. SUM
     INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
@@ -779,6 +855,21 @@ BEGIN
 	FROM dbsl.Socio s
 	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
 	WHERE s.NroSocio = @idSocio;
+	-- 6. Pileta de Verano
+	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+	SELECT 
+		'Pileta',
+		'Pase a pileta: ' + pv.TipoDePase + ' (' + FORMAT(pv.Fecha, 'dd/MM/yyyy') + ')',
+		CASE 
+			WHEN cs.NombreCategoria = 'Menor' THEN pv.CostoSocioMenor
+			ELSE pv.CostoSocioAdulto
+		END,
+		@idFactura
+	FROM dbsl.Inscripcion I
+	JOIN dbsl.PiletaVerano pv ON I.idPileta = pv.idPileta
+	JOIN dbsl.Socio s ON I.NroSocio = s.NroSocio
+	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
+	WHERE I.NroSocio = @idSocio AND I.idPileta IS NOT NULL;
 
 	-- DESCUENTO Multiples Actividades
 	DECLARE @CantidadActividades INT;
