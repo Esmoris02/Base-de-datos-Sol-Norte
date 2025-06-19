@@ -11,13 +11,13 @@ CREATE TABLE dbsl.CategoriaSocio (
     EdadDesde INT,
     EdadHasta INT,
 	Costo INT
-);
+)
 
 CREATE TABLE dbsl.GrupoFamiliar (
     idGrupo INT IDENTITY(1,1) PRIMARY KEY,
     ResponsableNombre VARCHAR(50),
     Dni VARCHAR(20)
-);
+)
  
 CREATE TABLE dbsl.Socio (
     NroSocio INT PRIMARY KEY,
@@ -36,7 +36,7 @@ CREATE TABLE dbsl.Socio (
 	SaldoFavor INT,
     FOREIGN KEY (idCategoria) REFERENCES dbsl.CategoriaSocio(idCategoria),
     FOREIGN KEY (idGrupoFamiliar) REFERENCES dbsl.GrupoFamiliar(idGrupo)
-);
+)
  
 CREATE TABLE dbsl.Usuario (
     Usuario VARCHAR(50) PRIMARY KEY,
@@ -46,14 +46,14 @@ CREATE TABLE dbsl.Usuario (
     FecVig DATE,
     NroSocio INT,
     FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio)
-);
+)
  
 CREATE TABLE dbsl.Actividad (
     idActividad INT IDENTITY(1,1) PRIMARY KEY,
     Estado VARCHAR(15),
     NombreActividad VARCHAR(50),
     Costo INT
-);
+)
  
 CREATE TABLE dbsl.Clase (
     idClase INT IDENTITY(1,1) PRIMARY KEY,
@@ -63,13 +63,13 @@ CREATE TABLE dbsl.Clase (
     Categoria VARCHAR(50),
     idActividad INT,
     FOREIGN KEY (idActividad) REFERENCES dbsl.Actividad(idActividad)
-);
+)
  
 CREATE TABLE dbsl.Suum (
     idSum INT IDENTITY(1,1) PRIMARY KEY,
     Descripcion VARCHAR(100),
     Precio INT
-);
+)
  
 CREATE TABLE dbsl.Reserva (
     idReserva INT IDENTITY(1,1) PRIMARY KEY,
@@ -78,7 +78,7 @@ CREATE TABLE dbsl.Reserva (
     HoraInicio TIME,
     HoraFin TIME,
     FOREIGN KEY (idSum) REFERENCES dbsl.Suum(idSum)
-);
+)
 
  CREATE TABLE dbsl.Colonia(
     idColonia INT IDENTITY(1,1) PRIMARY KEY,
@@ -87,7 +87,8 @@ CREATE TABLE dbsl.Reserva (
     Costo INT ,
     fechaInicio Date,
     fechaFin Date
-);
+)
+
 CREATE TABLE dbsl.Inscripcion (
     idInscripcion INT IDENTITY(1,1) PRIMARY KEY,
     NroSocio INT,
@@ -101,9 +102,17 @@ CREATE TABLE dbsl.Inscripcion (
     FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva),
 	FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta),
 	FOREIGN KEY (idColonia) REFERENCES dbsl.Colonia(idColonia)
-);
+)
+
+CREATE TABLE dbsl.Lluvia(
+	Fecha DATE NOT NULL,
+	Hora TIME NOT NULL,
+	Lluvia FLOAT,
+	CONSTRAINT PkLluvia PRIMARY KEY (Fecha,Hora)
+)
+
  
-create TABLE dbsl.PiletaVerano(
+CREATE TABLE dbsl.PiletaVerano(
     idPileta INT IDENTITY(1,1) PRIMARY KEY,
     Fecha DATE,
 	TipoDePase VARCHAR(20), -- Dia, mes , temporada
@@ -112,7 +121,7 @@ create TABLE dbsl.PiletaVerano(
 	CostoSocioMenor INT,
     CostoInvitadoMenor INT,
     Lluvia BIT NOT NULL DEFAULT 0
-);
+)
 
 CREATE TABLE dbsl.Invitado (
     idInvitado INT IDENTITY(1,1) PRIMARY KEY,
@@ -123,12 +132,12 @@ CREATE TABLE dbsl.Invitado (
     idPileta INT,
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion),
     FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta)
-);
+)
  
 CREATE TABLE dbsl.MetodoPago (
     idMetodoPago INT IDENTITY(1,1) PRIMARY KEY,
     Descripcion VARCHAR(50)
-);
+)
  
 CREATE TABLE dbsl.Factura (
     idFactura INT IDENTITY(1,1) PRIMARY KEY,
@@ -139,7 +148,7 @@ CREATE TABLE dbsl.Factura (
     Total INT,
     idInscripcion INT,
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
-);
+)
  
 CREATE TABLE dbsl.Cobro (
     idCobro INT IDENTITY(1,1) PRIMARY KEY,
@@ -151,7 +160,7 @@ CREATE TABLE dbsl.Cobro (
     idFactura INT,
     FOREIGN KEY (idMetodoPago) REFERENCES dbsl.MetodoPago(idMetodoPago),
     FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura)
-);
+)
  
 CREATE TABLE dbsl.DetalleFactura (
     idDetalle INT IDENTITY(1,1) PRIMARY KEY,
@@ -162,7 +171,7 @@ CREATE TABLE dbsl.DetalleFactura (
     idInscripcion INT,
     FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura),
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
-);
+)
  
 
  

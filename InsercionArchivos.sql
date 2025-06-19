@@ -1,6 +1,8 @@
 --Importar datos desde un archivo
 --Primero creamos una tabla temporal para poder bajar todos los datos y luego almacenarlos en nuestras tablas permanentes
 --teniendo en cuenta los duplicados, etc
+USE ClubSolNorte
+go
 
 CREATE TABLE dbsl.TemporalSocio(
     NroSocio CHAR(7),
@@ -83,7 +85,9 @@ BEGIN
     PRINT 'Importación completada correctamente.'
 END
 
-EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
+EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
+
 
 SELECT * FROM dbsl.Socio
 SELECT * FROM dbsl.GrupoFamiliar
@@ -162,13 +166,14 @@ BEGIN
     PRINT 'Importación completada correctamente.'
 END
 
-EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
+EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\arima\OneDrive\Documentos\UNLAM\BASES DE DATOS APLICADA\Grupo_familiar .csv'
+--EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
 
 select * from dbsl.Socio
 
 ----------------------------Carga Categoria de socio-----------------------------------------------------------------------------------------------
 
-CREATE OR ALTER PROCEDURE dbsl.cargar_editar_CategoriaSocio(@NombreCategoria varchar(50), @EdadDesde INT,@EdadHasta INT, @Costo INT,@VigenteHasta VARCHAR(15),@Accion CHAR)
+CREATE OR ALTER PROCEDURE dbsl.CargarEditarCategoriaSocio(@NombreCategoria varchar(50), @EdadDesde INT,@EdadHasta INT, @Costo INT,@VigenteHasta VARCHAR(15),@Accion CHAR)
 AS
 BEGIN
 	if @accion = 'c'
@@ -197,9 +202,12 @@ GO
 ALTER TABLE dbsl.CategoriaSocio
 ADD VigenteHasta VARCHAR(15)
 
-EXEC dbsl.cargar_editar_CategoriaSocio 'Menor',0,12,10000,'31/05/2025','c'
-EXEC dbsl.cargar_editar_CategoriaSocio 'Cadete',13,17,15000,'31/05/2025','c'
-EXEC dbsl.cargar_editar_CategoriaSocio 'Mayor',18,99,25000,'31/05/2025','c'
+--ALTER TABLE dbsl.CategoriaSocio
+--ADD Costo INT
+
+EXEC dbsl.CargarEditarCategoriaSocio 'Menor',0,12,10000,'31/05/2025','c'
+EXEC dbsl.CargarEditarCategoriaSocio 'Cadete',13,17,15000,'31/05/2025','c'
+EXEC dbsl.CargarEditarCategoriaSocio 'Mayor',18,99,25000,'31/05/2025','c'
 
 SELECT * FROM dbsl.CategoriaSocio	
  
@@ -207,7 +215,7 @@ SELECT * FROM dbsl.CategoriaSocio
 ----------------------------Carga Actividades-----------------------------------------------------------------------------------------------
 
 
-CREATE OR ALTER PROCEDURE dbsl.cargar_editar_actividad (@Estado VARCHAR(15),@nombreActividad VARCHAR(50),@costo INT,@accion CHAR)
+CREATE OR ALTER PROCEDURE dbsl.CargarEditarActividad (@Estado VARCHAR(15),@nombreActividad VARCHAR(50),@costo INT,@accion CHAR)
 AS
 BEGIN
 	
@@ -231,20 +239,93 @@ BEGIN
 		BEGIN
 		PRINT 'El ultimo parametro debe ser "e" para editar algun valor o "c" para crear uno nuevo"'
 	END
-end
+END
 GO
 
-exec dbsl.cargar_editar_actividad '31/05/2025','Futsal', 25000,'c'
-exec dbsl.cargar_editar_actividad '31/05/2025','Voley', 30000,'c'
-exec dbsl.cargar_editar_actividad '31/05/2025','Taekwondo', 25000,'c'
-exec dbsl.cargar_editar_actividad '31/05/2025','Baile artistico', 30000,'c'
-exec dbsl.cargar_editar_actividad '31/05/2025','Natacion', 45000,'c'
-exec dbsl.cargar_editar_actividad '31/05/2025','Ajedrez', 2000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Futsal', 25000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Voley', 30000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Taekwondo', 25000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Baile artistico', 30000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Natacion', 45000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Ajedrez', 2000,'c'
 
-select* from dbsl.Actividad
+SELECT * FROM dbsl.Actividad
 
-select * from dbsl.PiletaVerano
+SELECT * FROM dbsl.PiletaVerano
 
 ----------------------------Carga Pileta Verano-----------------------------------------------------------------------------------------------
-SELECT * FROM dbsl.PiletaVerano
+ALTER TABLE dbsl.PiletaVerano
+ADD TipoDePase VARCHAR(20), -- Dia, mes , temporada
+	CostoSocioAdulto INT,
+    CostoInvitadoAdulto INT,
+    CostoSocioMenor INT,
+    CostoInvitadoMenor INT
+
+---------------------------Cargar Lluvia-----------------------------------------------------------------------------------
+CREATE VIEW dbsl.VLluviaDia AS
+	SELECT
+			fecha,
+			CASE
+				WHEN SUM(CASE WHEN lluvia > 0 THEN 1 ELSE 0 END) > 0 THEN 1
+			ELSE 0
+			END AS llovio
+	FROM dbsl.Lluvia
+	WHERE hora BETWEEN '08:00:00' AND '20:00:00'
+	GROUP BY fecha
+
+SELECT*FROM dbsl.Lluvia
+
+CREATE OR ALTER PROCEDURE dbsl.ActualizarLluviaDesdeArchivo
+    @RutaArchivo NVARCHAR(300)
+AS
+BEGIN
+    SET NOCOUNT ON
+
+    -- Crear tabla temporal para importar los datos del CSV
+    CREATE TABLE #TempLluvia (
+        time VARCHAR(20),
+        temperatura FLOAT,
+        lluvia FLOAT,
+        humedad INT,
+        viento FLOAT
+    )
+
+    -- Importar desde archivo CSV ( fila 3)
+	DECLARE @sql NVARCHAR(MAX)
+    SET @sql = '
+    BULK INSERT #TempLluvia
+    FROM ''' + @RutaArchivo + '''
+    WITH (
+        FORMAT = ''CSV'',
+        FIRSTROW = 5,
+        FIELDTERMINATOR = '','',
+        ROWTERMINATOR = ''\n'',
+        CODEPAGE = ''1252''
+    );'
+
+	EXEC sp_executesql @sql
+
+    -- Insertar los datos en la tabla Lluvia
+    INSERT INTO dbsl.Lluvia (fecha, hora, lluvia)
+    SELECT
+        CAST(LEFT(time, 10) AS DATE),
+        CAST(SUBSTRING(time, 12, 5) + ':00' AS TIME),
+        lluvia
+    FROM #TempLluvia
+
+
+	UPDATE PV
+	SET PV.Lluvia = V.llovio
+	FROM dbsl.PiletaVerano PV
+	JOIN dbsl.VLluviaDia V ON PV.Fecha = V.fecha
+
+	 DROP TABLE #TempLluvia
+END
+
+EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
+
+
+
+
+
 
