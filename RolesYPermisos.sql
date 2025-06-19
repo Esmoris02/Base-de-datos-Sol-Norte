@@ -113,3 +113,84 @@ GRANT SELECT ON dbsl.Inscripcion TO dbsl_Socio;
 GRANT SELECT ON SCHEMA::dbsl TO dbsl_Autoridad;
 
 
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'SN_Master16625';
+
+CREATE CERTIFICATE Cert_ClubSolNorte
+WITH SUBJECT = 'Certificado para encriptación de datos sensibles de empleados';
+
+
+CREATE SYMMETRIC KEY SN_DatosSensibles
+WITH ALGORITHM = AES_256
+ENCRYPTION BY CERTIFICATE Cert_ClubSolNorte;
+
+ALTER TABLE dbsl.Usuario 
+ADD Direccion VARBINARY(256),
+	FecNac VARBINARY(256);
+
+
+CREATE OR ALTER PROCEDURE dbsl.insertarUsuario
+	@Usuario VARCHAR(50),
+	@Estado VARCHAR(15),
+	@Contrasenia VARCHAR(50),
+	@Rol VARCHAR(50),
+	@FecVig DATE,
+	@Direccion VARCHAR(100),
+	@FecNac DATE,
+	@NroSocio INT = NULL
+AS
+BEGIN
+ 
+	IF (LEN(TRIM(@Usuario)) = 0 OR EXISTS (SELECT 1 FROM dbsl.Usuario WHERE Usuario = @Usuario))
+	BEGIN 
+		RAISERROR ('nombre de usuario incorrecto o Usuario ya existente.',16,1)
+		RETURN
+	END
+ 
+	IF @Estado NOT IN ('activo','inactivo')
+	BEGIN 
+		RAISERROR ('Estado incorrecto. Establece "activo" o "inactivo"',16,1)
+		RETURN
+	END
+ 
+	IF @Rol NOT IN ('administrador','profesor','socio')
+    BEGIN
+        RAISERROR('El rol ingresado no es válido. Debe ser: "administrador","profesor" o "socio"', 16, 1)
+        RETURN
+    END
+ 
+	IF (@FecVig IS NULL OR @FecVig >= GETDATE() OR @FecVig < '1900-01-01' OR @FecVig > GETDATE())
+	BEGIN
+		RAISERROR('La fecha no puede ser nula, mayor a la actual o menor al año 1900.', 16, 1)
+		RETURN
+	END
+ 
+	IF @NroSocio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE NroSocio = @NroSocio)
+		BEGIN
+			RAISERROR('El socio asignado no existe.', 16, 1)
+			RETURN
+		END
+	IF @Direccion IS NULL
+		BEGIN
+			RAISERROR('La direccion no puede ser nula.', 16, 1)
+			RETURN
+		END
+	IF @FecNac IS NULL OR @FecNac >= GETDATE()
+		BEGIN
+			RAISERROR('La fecha de nacimiento no puede ser nula, mayor o igual a la actual.', 16, 1)
+			RETURN
+		END
+
+	OPEN SYMMETRIC KEY SN_DatosSensibles DECRYPTION BY CERTIFICATE Cert_ClubSolNorte;
+
+   
+    DECLARE @ContraseniaEncriptada VARBINARY(256) = ENCRYPTBYKEY(KEY_GUID('SN_DatosSensibles'), @Contrasenia);
+	DECLARE @DireccionEncriptada VARBINARY(256) = ENCRYPTBYKEY(KEY_GUID('SN_DatosSensibles'), @Direccion);
+	DECLARE @FecNacEncriptada VARBINARY(256) = ENCRYPTBYKEY(KEY_GUID('SN_DatosSensibles'), CONVERT((NVARCHAR(30)),@FecNac));
+
+    CLOSE SYMMETRIC KEY SN_DatosSensibles;
+ 
+	INSERT INTO dbsl.Usuario(Usuario,Estado,Contrasenia,Rol,FecVig,NroSocio,Direccion,FecNac)
+	VALUES (@Usuario, @Estado, @ContraseniaEncriptada, @Rol, @FecVig, @NroSocio, @DireccionEncriptada, @FecNacEncriptada)
+END
+
+
