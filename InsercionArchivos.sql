@@ -166,7 +166,7 @@ BEGIN
     PRINT 'Importación completada correctamente.'
 END
 
-EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\arima\OneDrive\Documentos\UNLAM\BASES DE DATOS APLICADA\Grupo_familiar .csv'
+--EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\arima\OneDrive\Documentos\UNLAM\BASES DE DATOS APLICADA\Grupo_familiar .csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
 
 select * from dbsl.Socio
@@ -322,8 +322,73 @@ BEGIN
 	 DROP TABLE #TempLluvia
 END
 
-EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
+--EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
+EXEC dbsl.ActualizarLluviaDesdeArchivo 'C:\Users\leand\Desktop\TPI-2025-1C\open-meteo-buenosaires_2025.csv'
 
+------------------------------------CARGAR PiletaVerano------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE dbsl.CrearTablaTemporalTarifaPileta
+AS
+BEGIN
+	CREATE TABLE dbsl.TemporalTarifaPileta (
+    TipoDePase VARCHAR(20),
+    VigenteHasta DATE,
+    CostoSocioAdulto INT,
+    CostoInvitadoAdulto INT,
+    CostoSocioMenor INT,
+    CostoInvitadoMenor INT
+	)
+
+	INSERT INTO dbsl.TemporalTarifaPileta
+	VALUES
+	('Día', '2025-02-28', 25000, 30000, 15000, 2000),
+	('Temporada', '2025-02-28', 2000000, 0, 1200000, 0),
+	('Mes', '2025-02-28', 625000, 0, 375000, 0);
+
+END
+
+
+
+CREATE OR ALTER PROCEDURE dbsl.spCargarPiletaVerano
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE 
+        @fecha DATE = '2024-12-01',
+        @fin DATE = '2025-02-28';
+
+    WHILE @fecha <= @fin
+    BEGIN
+        -- Día-------------------------------------
+        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
+        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
+        FROM dbsl.TemporalTarifaPileta
+        WHERE TipoDePase = 'Día';
+
+        -- Temporada--------------------------
+        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
+        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
+        FROM dbsl.TemporalTarifaPileta
+        WHERE TipoDePase = 'Temporada';
+
+        -- Mes------------------------
+        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
+        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
+        FROM dbsl.TemporalTarifaPileta
+        WHERE TipoDePase = 'Mes';
+
+        SET @fecha = DATEADD(DAY, 1, @fecha);
+    END
+
+    PRINT 'Carga de PiletaVerano completada correctamente.';
+END
+
+--Ejecutar los dos al mismo tiempo
+EXEC dbsl.CrearTablaTemporalTarifaPileta
+EXEC dbsl.spCargarPiletaVerano
+
+SELECT * from dbsl.PiletaVerano
 
 
 
