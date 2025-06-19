@@ -44,7 +44,7 @@ EXEC dbsl.insertarGrupoFamiliar 'Marcelo González', 30111222
 EXEC dbsl.InsertarSocio
     1001, 'Activo', 'Martina', 'López', '44123456', '2002-05-10',
     '1134567890', '1122334455', 'marti.lopez@gmail.com', 'OSDE', '123456789',
-    1, NULL
+    3, NULL
 --Error esperado "Ya existe un socio con ese número." (si se utilizó el anterior SP)
 EXEC dbsl.InsertarSocio
     1001, 'Activo', 'Martina', 'López', '44123456', '2015-05-10',
@@ -134,18 +134,18 @@ EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Usuario', 2
 
 --select * from dbsl.Clase
 --------------INSERTAR PILETVERANO-------------------
--- Valor del Mes
-EXEC dbsl.insertarPiletaVerano 
-    @Fecha = '2025-12-20',
-    @TipoDePase = 'Pase del Mes',
-    @CostoSocioAdulto = 1500,
-    @CostoInvitadoAdulto = 3000,
-    @CostoSocioMenor = 1000,
-    @CostoInvitadoMenor = 2000,
-    @Lluvia = 0;
---select * from dbsl.PiletaVerano
--- Valor de Temporada
-EXEC dbsl.insertarPiletaVerano '2025-12-21','Valor de Temporada',60000,0,50000,0,0
+--Se espera que se inserte correctamente
+EXEC dbsl.insertarPiletaVerano '2025-06-01'
+--Error esperado:"Ya hay datos de pileta cargados para esa fecha"
+EXEC dbsl.insertarPiletaVerano '2025-06-01'
+--Se espera que se inserte correctamente
+EXEC dbsl.insertarPiletaVerano '2025-09-02'
+-- Error esperado "la fecha no puede ser nula" 
+EXEC dbsl.insertarPiletaVerano NULL
+-- Error esperado "la fecha no puede ser menor a la actual" 
+EXEC dbsl.insertarPiletaVerano '2024-01-01'
+--Se espera que se inserte correctamente
+EXEC dbsl.insertarPiletaVerano '2025-06-01'
 
 --------------INSERTAR INVITADO------------------------
 --Se espera que se ingrese correctamente
@@ -201,35 +201,21 @@ EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 0
 --Error esperado:'Descripcion invalida. Minimo de 5 y maximo de 100'
 EXEC dbsl.InsertarSum @Descripcion = 'abc', @Precio = 100
 
-
---select * from dbsl.Suum
 ----------------INSERTAR RESERVA--------------------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.InsertarReserva @idSum = 1,@FechaReserva = '2025-12-28',@HoraInicio = '10:00',@HoraFin = '12:00';
-
---select* from dbsl.Reserva
+EXEC dbsl.InsertarReserva @Fecha = '2025-06-01', @Turno = 'Dia'
+--Error esperado:'Ese turno ya está reservado'
+EXEC dbsl.InsertarReserva @Fecha = '2025-06-01', @Turno = 'Dia'
 
 ----------------INSERTAR INSCRIPCION-----------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.InsertarInscripcion 1001, 1, '2025-06-01', NULL
+--Error esperado:'La clase no existe.'
+EXEC dbsl.InsertarInscripcion 1, 620, '2025-06-01', NULL
+--Error esperado:'La reserva especificada no existe.'
+EXEC dbsl.InsertarInscripcion 3, 2, '2025-08-01', 98
 
--- Actividad
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
--- Reserva de SUM
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idReserva = 1, @FechaIn = '2025-12-22';
--- Colonia
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
 
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
-
---select * from dbsl.Inscripcion
-
----------------INSERTAR COLONIA--------------------
-EXEC dbsl.InsertarColonia 
-    @Nombre = 'Colonia Enero',
-    @Descripcion = 'Actividades recreativas para menores durante enero',
-    @Costo = 28000,
-    @fechaInicio = '2025-01-02',
-    @fechaFin = '2025-01-31';
---select * from dbsl.Colonia
 
 
 
