@@ -65,6 +65,7 @@ BEGIN
             Email,
             ObraSocial,
             NumeroObraSocial
+		
 			)
     SELECT
 		CAST(SUBSTRING(NroSocio, 4, 4) AS INT),  --castea el nro de socio que venia como un varchar, toma 4 caracteres a partir de la posición 4 y lo toma como un INT
@@ -77,6 +78,7 @@ BEGIN
         Email,
         ObraSocial,
         NumeroObraSocial
+		
     FROM dbsl.TemporalSocio TS
     WHERE NOT EXISTS (
         SELECT 1 FROM dbsl.Socio S  WHERE S.NroSocio = CAST(SUBSTRING(TS.NroSocio, 4, 4) AS INT)
@@ -144,18 +146,18 @@ BEGIN
 
     --Insertar socios (evitar duplicados)
     INSERT INTO dbsl.Socio (
-			 NroSocio,
-    Nombre,
-    Apellido,
-    Dni,
-    FechaNac,
-    Telefono,
-    TelefonoEmergencia,
-    Email,
-    ObraSocial,
-    NumeroObraSocial
-)
-SELECT
+		NroSocio,
+		Nombre,
+		Apellido,
+		Dni,
+		FechaNac,
+		Telefono,
+		TelefonoEmergencia,
+		Email,
+		ObraSocial,
+		NumeroObraSocial
+	)
+	SELECT
     CAST(SUBSTRING(TG.NroSocio, 4, 4) AS INT),
     TG.Nombre,
     TG.Apellido,
@@ -263,13 +265,14 @@ END
 GO
 
 EXEC dbsl.CargarEditarActividad '31/05/2025','Futsal', 25000,'c'
-EXEC dbsl.CargarEditarActividad '31/05/2025','Voley', 30000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Vóley', 30000,'c'
 EXEC dbsl.CargarEditarActividad '31/05/2025','Taekwondo', 25000,'c'
-EXEC dbsl.CargarEditarActividad '31/05/2025','Baile artistico', 30000,'c'
-EXEC dbsl.CargarEditarActividad '31/05/2025','Natacion', 45000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Baile artístico', 30000,'c'
+EXEC dbsl.CargarEditarActividad '31/05/2025','Natación', 45000,'c'
 EXEC dbsl.CargarEditarActividad '31/05/2025','Ajedrez', 2000,'c'
 
 SELECT * FROM dbsl.Actividad
+SELECT * FROM dbsl.PresentismoClases
 
 SELECT * FROM dbsl.PiletaVerano
 
@@ -410,7 +413,185 @@ EXEC dbsl.spCargarPiletaVerano
 
 SELECT * from dbsl.PiletaVerano
 
+CREATE  TABLE dbsl.TemporalPresentismo
+(
+	NroSocio VARCHAR(50),
+    Actividad VARCHAR(50),
+	FechaDeAsistencia VARCHAR(50),
+	Asistencia VARCHAR(20),
+	Profesor VARCHAR(50),
+	Nada1 VARCHAR(50) NULL,
+	Nada2 VARCHAR(50) NULL,
+	Nada3 VARCHAR(50) NULL,
+	Nada4 VARCHAR(50) NULL
+
+)
+--DROP TABLE dbsl.TemporalPresentismo
 
 
+CREATE OR ALTER PROCEDURE dbsl.spImportarPresentismo
+    @RutaArchivo NVARCHAR(300)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- 1. Limpiar la tabla temporal
+        DELETE FROM dbsl.TemporalPresentismo;
+
+        -- 2. Armar BULK INSERT dinámico
+        DECLARE @sql NVARCHAR(MAX);
+        SET @sql = '
+        BULK INSERT dbsl.TemporalPresentismo
+        FROM ''' + @RutaArchivo + '''
+        WITH (
+            FIRSTROW = 2,
+            FIELDTERMINATOR = '','',
+            ROWTERMINATOR = ''\n'',  
+            CODEPAGE = ''1252'',     
+			TABLOCK
+
+        );';
+
+        EXEC sp_executesql @sql;
+
+        -- 3. Insertar en tabla final
+        INSERT INTO dbsl.PresentismoClases (
+            NombreActividad,
+            NroSocio,
+            Fecha,
+            Asistencia
+        )
+        SELECT
+            TP.Actividad,
+            TRY_CAST(SUBSTRING(TP.NroSocio, 4, 4) AS INT),
+            TRY_CONVERT(DATE, LTRIM(RTRIM(TP.FechaDeAsistencia)), 103),
+            LEFT(RTRIM(TP.Asistencia), 1)
+        FROM dbsl.TemporalPresentismo TP;
+		SELECT * FROM dbsl.TemporalPresentismo
+        PRINT 'Importación exitosa.';
+
+    END TRY
+    BEGIN CATCH
+        PRINT 'Ocurrió un error durante la importación.';
+        PRINT ERROR_MESSAGE();
+    END CATCH
+
+	UPDATE P
+	SET P.idActividad = A.idActividad
+	FROM dbsl.PresentismoClases P
+	JOIN dbsl.Actividad A ON P.NombreActividad = A.NombreActividad
+END
+
+EXEC dbsl.spImportarPresentismo 'C:\Users\Usuario\Desktop\presentismo_actividades.csv'
+
+CREATE OR ALTER PROCEDURE dbsl.spActualizaCategoriaSocio
+AS
+BEGIN
+
+	-- Socios con fecha de nacimiento
+	UPDATE S
+	SET S.idCategoria = C.idCategoria
+	FROM dbsl.Socio S
+	JOIN dbsl.CategoriaSocio C
+    ON DATEDIFF(YEAR, S.FechaNac, GETDATE()) BETWEEN C.EdadDesde AND C.EdadHasta
+	WHERE S.FechaNac IS NOT NULL;
+
+-- Socios sin fecha de nacimiento (asumidos como Mayores)
+	UPDATE S
+	SET S.idCategoria = C.idCategoria
+	FROM dbsl.Socio S
+	JOIN dbsl.CategoriaSocio C ON C.NombreCategoria = 'Mayor'
+	WHERE S.FechaNac IS NULL;
+
+END
+EXEC dbsl.spActualizaCategoriaSocio
+
+SELECT * from dbsl.PresentismoClases
+SELECT * FROM dbsl.Actividad
+SELECT * from dbsl.Socio
+SELECT * FROM dbsl.Clase
 
 
+CREATE  TABLE dbsl.TemporalClases
+(
+	Estado VARCHAR(50),
+	Horario VARCHAR(50),
+	Dia VARCHAR(50),
+	Categoria VARCHAR(50),
+	idActividad VARCHAR(50)
+	
+)
+--DROP TABLE dbsl.TemporalClases
+
+
+CREATE OR ALTER PROCEDURE dbsl.spImportarClases
+    @RutaArchivo NVARCHAR(300)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+        -- 1. Limpiar la tabla temporal
+        DELETE FROM dbsl.TemporalClases;
+
+        -- 2. Armar BULK INSERT dinámico
+        DECLARE @sql NVARCHAR(MAX);
+        SET @sql = '
+        BULK INSERT dbsl.TemporalClases
+        FROM ''' + @RutaArchivo + '''
+        WITH (
+            FIRSTROW = 2,
+            FIELDTERMINATOR = '','',
+            ROWTERMINATOR = ''\n'',  
+            CODEPAGE = ''65001'',      
+			TABLOCK
+
+        );';
+
+        EXEC sp_executesql @sql;
+
+        -- 3. Insertar en tabla final
+        INSERT INTO dbsl.Clase (
+            Estado,
+            Horario,
+            Dia,
+            Categoria,
+			idActividad
+        )
+        SELECT
+            TC.Estado,
+            TC.Horario,
+            TC.Dia,
+            TC.Categoria,
+			TC.idActividad
+        FROM dbsl.TemporalClases TC;
+		SELECT * FROM dbsl.TemporalClases
+        PRINT 'Importación exitosa.';
+
+END
+EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
+
+
+SELECT * FROM dbsl.Clase
+SELECT * FROM dbsl.PresentismoClases
+SELECT * FROM dbsl.Actividad
+SELECT * FROM dbsl.Socio
+SELECT * FROM dbsl.CategoriaSocio
+drop table dbsl.Clase
+------REPORTE 3 NO TOCAR
+SELECT 
+    CS.NombreCategoria,
+    P.NombreActividad,
+    COUNT(DISTINCT P.NroSocio) AS CantidadSociosConFaltas,
+    COUNT(*) AS TotalInasistencias
+FROM dbsl.PresentismoClases P
+JOIN dbsl.Socio S ON P.NroSocio = S.NroSocio
+JOIN dbsl.CategoriaSocio CS ON S.idCategoria = CS.idCategoria
+WHERE P.Asistencia = 'A'
+GROUP BY 
+    CS.NombreCategoria,
+    P.NombreActividad
+ORDER BY 
+    TotalInasistencias DESC;
+
+------REPORTE 3 NO TOCAR

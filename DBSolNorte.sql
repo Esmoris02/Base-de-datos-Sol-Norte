@@ -5,67 +5,19 @@ go
 create schema dbsl
 --data base sol norte
 go
-CREATE TABLE dbsl.Categoria(
+CREATE TABLE dbsl.CategoriaSocio (
     idCategoria INT IDENTITY(1,1) PRIMARY KEY,
     NombreCategoria VARCHAR(50),
     EdadDesde INT,
     EdadHasta INT,
-	Costo INT
-)
-
-go
-CREATE TABLE dbsl.Actividad (
-    idActividad INT IDENTITY(1,1) PRIMARY KEY,
-    Estado VARCHAR(15),
-    NombreActividad VARCHAR(50),
-    Costo INT
-)
-go
+	Costo INT,
+	VigenteHasta VARCHAR(15)
+);
 CREATE TABLE dbsl.GrupoFamiliar (
     idGrupo INT IDENTITY(1,1) PRIMARY KEY,
     ResponsableNombre VARCHAR(50),
     Dni VARCHAR(20)
-)
-go
-
-CREATE TABLE dbsl.Suum (
-    idSum INT IDENTITY(1,1) PRIMARY KEY,
-    Descripcion VARCHAR(100),
-    Precio INT
-)
-go
- CREATE TABLE dbsl.Colonia(
-    idColonia INT IDENTITY(1,1) PRIMARY KEY,
-    Nombre VARCHAR(20),
-	Descripcion VARCHAR(255),
-    Costo INT ,
-    fechaInicio Date,
-    fechaFin Date
-)
-go
-CREATE TABLE dbsl.PiletaVerano(
-    idPileta INT IDENTITY(1,1) PRIMARY KEY,
-    Fecha DATE,
-	TipoDePase VARCHAR(20), -- Dia, mes , temporada
-    CostoSocioAdulto INT,
-    CostoInvitadoAdulto INT,
-	CostoSocioMenor INT,
-    CostoInvitadoMenor INT,
-    Lluvia BIT NOT NULL DEFAULT 0
-)
-go
-CREATE TABLE dbsl.Lluvia(
-	Fecha DATE NOT NULL,
-	Hora TIME NOT NULL,
-	Lluvia FLOAT,
-	CONSTRAINT PkLluvia PRIMARY KEY (Fecha,Hora)
-)
-go
-CREATE TABLE dbsl.MetodoPago (
-    idMetodoPago INT IDENTITY(1,1) PRIMARY KEY,
-    Descripcion VARCHAR(50)
-)
- go
+);
 
 CREATE TABLE dbsl.Socio (
     NroSocio INT PRIMARY KEY,
@@ -84,8 +36,8 @@ CREATE TABLE dbsl.Socio (
 	SaldoFavor INT,
     FOREIGN KEY (idCategoria) REFERENCES dbsl.CategoriaSocio(idCategoria),
     FOREIGN KEY (idGrupoFamiliar) REFERENCES dbsl.GrupoFamiliar(idGrupo)
-)
-go
+);
+ 
 CREATE TABLE dbsl.Usuario (
     Usuario VARCHAR(50) PRIMARY KEY,
     Estado VARCHAR(15),
@@ -94,8 +46,14 @@ CREATE TABLE dbsl.Usuario (
     FecVig DATE,
     NroSocio INT,
     FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio)
-)
-go
+);
+ 
+CREATE TABLE dbsl.Actividad (
+    idActividad INT IDENTITY(1,1) PRIMARY KEY,
+    Estado VARCHAR(15),
+    NombreActividad VARCHAR(50),
+    Costo INT
+);
  
 CREATE TABLE dbsl.Clase (
     idClase INT IDENTITY(1,1) PRIMARY KEY,
@@ -105,9 +63,13 @@ CREATE TABLE dbsl.Clase (
     Categoria VARCHAR(50),
     idActividad INT,
     FOREIGN KEY (idActividad) REFERENCES dbsl.Actividad(idActividad)
-)
-go
-
+);
+ 
+CREATE TABLE dbsl.Suum (
+    idSum INT IDENTITY(1,1) PRIMARY KEY,
+    Descripcion VARCHAR(100),
+    Precio INT
+);
  
 CREATE TABLE dbsl.Reserva (
     idReserva INT IDENTITY(1,1) PRIMARY KEY,
@@ -116,8 +78,27 @@ CREATE TABLE dbsl.Reserva (
     HoraInicio TIME,
     HoraFin TIME,
     FOREIGN KEY (idSum) REFERENCES dbsl.Suum(idSum)
-)
-go
+);
+
+ CREATE TABLE dbsl.Colonia(
+    idColonia INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(20),
+	Descripcion VARCHAR(255),
+    Costo INT ,
+    fechaInicio Date,
+    fechaFin Date
+);
+
+CREATE TABLE dbsl.PiletaVerano(
+    idPileta INT IDENTITY(1,1) PRIMARY KEY,
+    Fecha DATE,
+	TipoDePase VARCHAR(20), -- Dia, mes , temporada
+    CostoSocioAdulto INT,
+    CostoInvitadoAdulto INT,
+	CostoSocioMenor INT,
+    CostoInvitadoMenor INT,
+    Lluvia BIT NOT NULL DEFAULT 0
+);
 
 CREATE TABLE dbsl.Inscripcion (
     idInscripcion INT IDENTITY(1,1) PRIMARY KEY,
@@ -132,9 +113,7 @@ CREATE TABLE dbsl.Inscripcion (
     FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva),
 	FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta),
 	FOREIGN KEY (idColonia) REFERENCES dbsl.Colonia(idColonia)
-)
-go
-
+);
  
 CREATE TABLE dbsl.Invitado (
     idInvitado INT IDENTITY(1,1) PRIMARY KEY,
@@ -145,8 +124,13 @@ CREATE TABLE dbsl.Invitado (
     idPileta INT,
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion),
     FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta)
-)
-go
+);
+ 
+CREATE TABLE dbsl.MetodoPago (
+    idMetodoPago INT IDENTITY(1,1) PRIMARY KEY,
+    Descripcion VARCHAR(50)
+);
+ 
 CREATE TABLE dbsl.Factura (
     idFactura INT IDENTITY(1,1) PRIMARY KEY,
     FechaEmision DATE,
@@ -155,19 +139,22 @@ CREATE TABLE dbsl.Factura (
     Estado VARCHAR(20),
     Total INT,
 	NroSocio INT
-)
- go
-CREATE TABLE  dbsl.Cobro (
+ 
+);
+ 
+CREATE TABLE dbsl.Cobro (
     idCobro INT IDENTITY(1,1) PRIMARY KEY,
-    FechaCobro DATE NOT NULL DEFAULT GETDATE(),
-    idMetodoPago INT NOT NULL,
-    Monto INT NOT NULL,
-    idFactura INT NOT NULL,
+    Monto INT,
+    Fecha DATE,
+    Reembolso BIT NOT NULL DEFAULT 0,
+    MontoReembolso INT,
+    idMetodoPago INT,
+    idFactura INT,
     FOREIGN KEY (idMetodoPago) REFERENCES dbsl.MetodoPago(idMetodoPago),
     FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura)
-)
-go
-CREATE TABLE  dbsl.DetalleFactura (
+);
+ 
+CREATE TABLE dbsl.DetalleFactura (
     idDetalle INT IDENTITY(1,1) PRIMARY KEY,
     TipoItem VARCHAR(50),
     Descripcion VARCHAR(50),
@@ -176,8 +163,8 @@ CREATE TABLE  dbsl.DetalleFactura (
     idInscripcion INT,
     FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura),
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
-)
-go
+);
+
 CREATE TABLE dbsl.Reembolso (
     idReembolso INT IDENTITY(1,1) PRIMARY KEY,
     idCobro INT NOT NULL,
@@ -189,9 +176,35 @@ CREATE TABLE dbsl.Reembolso (
     PagoACuenta BIT NOT NULL DEFAULT 0,
     FOREIGN KEY (idCobro) REFERENCES dbsl.Cobro(idCobro),
 );
-go
+CREATE TABLE dbsl.PresentismoClases(
+	idPresentismo INT IDENTITY(1,1) PRIMARY KEY,
+	idActividad INT,
+	NombreActividad VARCHAR(50),
+	NroSocio INT,
+	Fecha DATE,
+	Asistencia CHAR(1) CHECK (Asistencia IN ('A','J','P')),
+	FOREIGN KEY (idActividad) REFERENCES dbsl.Actividad(idActividad)
+);
+ALTER TABLE dbsl.PresentismoClases ADD idClase INT FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase)
  
---drop table dbsl.Colonia,dbsl.DetalleFactura,dbsl.Cobro,dbsl.Factura,dbsl.MetodoPago,dbsl.Invitado,dbsl.Inscripcion,dbsl.Reserva,dbsl.Suum,dbsl.Clase,dbsl.Actividad,dbsl.Usuario,dbsl.Socio,dbsl.CategoriaSocio,dbsl.GrupoFamiliar,dbsl.PiletaVerano
+drop table dbsl.Colonia
+drop table dbsl.DetalleFactura
+drop table dbsl.Cobro
+drop table dbsl.Factura
+drop table dbsl.MetodoPago
+drop table dbsl.Invitado
+drop table dbsl.Inscripcion
+drop table dbsl.Reserva
+drop table dbsl.Suum 
+drop table dbsl.Clase
+drop table dbsl.Actividad 
+drop table dbsl.Usuario
+drop table dbsl.Socio
+drop table dbsl.CategoriaSocio
+drop table dbsl.GrupoFamiliar
+drop table dbsl.PresentismoClases
+
+
 
 
 
