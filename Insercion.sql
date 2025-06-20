@@ -458,79 +458,78 @@ GO
 IF OBJECT_ID('dbsl.insertarCobro','P') IS NOT NULL
 DROP PROCEDURE dbsl.insertarCobro
 GO
--- Lo que me me permite este procedure es poder registrar los distintos cobros. Ademas si se le devuelve plata al cliete
--- también queda registrado. Por ejemplo, si me paga con un billete de 10.000 y la factura es de 6.000, esto queda registrado como
---queda registrado como 6000 de cobro y 4000 de reenbolso
+
 CREATE PROCEDURE dbsl.insertarCobro
-	@Monto INT,
-	@MontoReembolso INT = 0,
-	@idMetodoPago INT,
-	@idFactura INT
+    @idFactura INT,
+    @idMetodoPago INT
 AS
 BEGIN
-SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
-    -- Validaciones básicas
-    IF @Monto < 0 OR @MontoReembolso < 0
+    -- Validar existencia de factura
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Factura WHERE idFactura = @idFactura)
     BEGIN
-        RAISERROR('Los montos no pueden ser negativos.', 16, 1)
-        RETURN
+        RAISERROR('La factura no existe.', 16, 1);
+        RETURN;
     END
 
-DECLARE @Fecha DATE = GETDATE()
+    -- Validar existencia del método de pago
+    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idMetodoPago = @idMetodoPago)
+    BEGIN
+        RAISERROR('El método de pago especificado no existe.', 16, 1);
+        RETURN;
+    END
 
-	IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idMetodoPago = @idMetodoPago)
-		BEGIN
-			RAISERROR('Metodo de pago inexistente.', 16, 1)
-			RETURN
-		END
-	IF NOT EXISTS (SELECT 1 FROM dbsl.Factura WHERE idFactura = @idFactura)
-		BEGIN
-			RAISERROR('Factura no existente.', 16, 1)
-			RETURN
-		END
-	--Obtengo información del total
-	DECLARE @TotalFactura INT, @NroSocio INT, @idInscripcion INT;
+    DECLARE @estado VARCHAR(20), 
+            @fechaSegundoVencimiento DATE, 
+            @fechaActual DATE = GETDATE(), 
+            @total INT;
+
     SELECT 
-        @TotalFactura = Total,
-        @idInscripcion = idInscripcion --siempre es null, creo que esta de mas esto esto
+        @estado = Estado,
+        @fechaSegundoVencimiento = FechaSegundoVencimiento
     FROM dbsl.Factura
     WHERE idFactura = @idFactura;
 
-    SELECT @NroSocio = NroSocio
-    FROM dbsl.Inscripcion
-    WHERE idInscripcion = @idInscripcion;
-
-	-- Estoy insertando en cobro los datos. Si es un reembolso se pone en 1 el reenbolso y se espesifica
-	INSERT INTO dbsl.Cobro (Monto, Fecha, Reembolso, MontoReembolso, idMetodoPago, idFactura)
-    VALUES (@Monto, GETDATE(), 
-            CASE WHEN @MontoReembolso > 0 THEN 1 ELSE 0 END,
-            @MontoReembolso, 
-            @idMetodoPago, 
-            @idFactura)
-	--Calculo lo que cobré hasta ahora
-	DECLARE @TotalCobrado INT;
-    SELECT @TotalCobrado = SUM(Monto - MontoReembolso)
-    FROM dbsl.Cobro
-    WHERE idFactura = @idFactura;
-	--Si el dinero acumulado hasta ahora ya satisface la factura, la signo como pagada
-	IF @TotalCobrado >= @TotalFactura
+    IF @estado = 'Pagada'
     BEGIN
+        RAISERROR('La factura ya fue pagada.', 16, 1);
+        RETURN;
+    END
+
+    -- Aplicar recargo si se pasó del segundo vencimiento
+    IF @fechaActual > @fechaSegundoVencimiento
+    BEGIN
+        DECLARE @recargo INT;
+        SELECT @recargo = CAST(SUM(monto) * 0.10 AS INT)
+        FROM dbsl.DetalleFactura
+        WHERE idFactura = @idFactura;
+
+        INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+        VALUES ('Recargo', '10% por pago fuera de término', @recargo, @idFactura);
+
+        -- Actualizar total
         UPDATE dbsl.Factura
-        SET Estado = 'Pagada'
+        SET Total = (
+            SELECT SUM(monto)
+            FROM dbsl.DetalleFactura
+            WHERE idFactura = @idFactura
+        )
         WHERE idFactura = @idFactura;
     END
-	--Si me exedí, lo agrego a saldo a favor
-	DECLARE @Excedente INT = @TotalCobrado - @TotalFactura;
 
-    IF @Excedente > 0 AND @NroSocio IS NOT NULL
-    BEGIN
-        UPDATE dbsl.Socio
-        SET SaldoFavor = ISNULL(SaldoFavor, 0) + @Excedente
-        WHERE NroSocio = @NroSocio;
-    END
+    -- Obtener el total actualizado
+    SELECT @total = Total FROM dbsl.Factura WHERE idFactura = @idFactura;
 
-END
+    -- Registrar el cobro
+    INSERT INTO dbsl.Cobro (FechaCobro, idMetodoPago, Monto, idFactura)
+    VALUES (@fechaActual, @idMetodoPago, @total, @idFactura);
+
+    -- Marcar factura como pagada
+    UPDATE dbsl.Factura
+    SET Estado = 'Pagada'
+    WHERE idFactura = @idFactura;
+END;
 GO
 
  --Detalle Factura-------------------------------------------------
@@ -936,6 +935,40 @@ BEGIN
         WHERE idFactura = @idFactura
     )
     WHERE idFactura = @idFactura;
+END;
+GO
+-------Insertar metodo de pago
+IF OBJECT_ID('dbsl.InsertarMetodoPago', 'P') IS NOT NULL
+DROP PROCEDURE dbsl.InsertarMetodoPago;
+GO
+
+CREATE PROCEDURE dbsl.InsertarMetodoPago
+    @Descripcion VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar entrada
+    IF @Descripcion IS NULL OR LTRIM(RTRIM(@Descripcion)) = ''
+    BEGIN
+        RAISERROR('La descripción del método de pago no puede estar vacía.', 16, 1);
+        RETURN;
+    END
+
+    -- Verificar si ya existe
+    IF EXISTS (
+        SELECT 1
+        FROM dbsl.MetodoPago
+        WHERE UPPER(Descripcion) = UPPER(@Descripcion)
+    )
+    BEGIN
+        RAISERROR('Ese método de pago ya está registrado.', 16, 1);
+        RETURN;
+    END
+
+    -- Insertar
+    INSERT INTO dbsl.MetodoPago (Descripcion)
+    VALUES (@Descripcion);
 END;
 GO
 

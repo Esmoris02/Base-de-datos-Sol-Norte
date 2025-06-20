@@ -172,6 +172,8 @@ EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
 --Error esperado:'Metodo de pago ya existe.'
 EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
 
+--select * from dbsl.MetodoPago
+
 ----------------INSERTAR GENERACION FACTURA---------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.GenerarFactura 1001
@@ -187,12 +189,13 @@ SELECT * FROM dbsl.DetalleFactura;
 --DELETE FROM dbsl.Factura;
 ----------------INSERTAR COBRO----------------------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.insertarCobro 1000, 200, 50, 1, 123
+EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=2;
 --Error esperado:'Metodo de pago inexistente.'
-EXEC dbsl.insertarCobro 1000, 0, 0, 9999, 123 
+EXEC dbsl.insertarCobro 
 --Error esperado:'Factura no existente.'
-EXEC dbsl.insertarCobro 1000, 0, 0, 1, 9999 
+EXEC dbsl.insertarCobro 
 
+--select * from dbsl.Cobro
 ----------------INSERTAR SUM------------------------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 150
