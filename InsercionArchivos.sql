@@ -4,16 +4,7 @@
 USE ClubSolNorte
 go
 
-
-DROP TABLE dbsl.TemporalSocio
-
-CREATE OR ALTER PROCEDURE dbsl.spImportarSocios
-    @RutaArchivo NVARCHAR(300)
-AS
-BEGIN
-    SET NOCOUNT ON
-
-    CREATE TABLE #TemporalSocio(
+CREATE TABLE dbsl.TemporalSocio(
     NroSocio CHAR(7),
     Nombre VARCHAR(50),
     Apellido VARCHAR(50),
@@ -27,11 +18,21 @@ BEGIN
 	ContactoObraSocial VARCHAR(30)
 )
 
+DROP TABLE dbsl.TemporalSocio
+
+CREATE OR ALTER PROCEDURE dbsl.spImportarSocios
+    @RutaArchivo NVARCHAR(300)
+AS
+BEGIN
+    SET NOCOUNT ON
+
+    DELETE FROM dbsl.TemporalSocio; --Eliminamos el contenido de la tabla temporal
+
     -- Importar datos del archivo CSV 
 
     DECLARE @sql NVARCHAR(MAX);
     SET @sql = '
-    BULK INSERT #TemporalSocio
+    BULK INSERT dbsl.TemporalSocio
     FROM ''' + @RutaArchivo + '''
     WITH (
         FIRSTROW = 2,
@@ -47,7 +48,7 @@ BEGIN
 	SELECT DISTINCT
 		 TS.Nombre,
 		 TS.Dni
-	FROM #TemporalSocio TS
+	FROM dbsl.TemporalSocio TS
 	WHERE NOT EXISTS (
     SELECT 1 FROM dbsl.GrupoFamiliar GF WHERE GF.Dni = TS.Dni
 	)
@@ -78,7 +79,7 @@ BEGIN
         ObraSocial,
         NumeroObraSocial
 		
-    FROM #TemporalSocio TS
+    FROM dbsl.TemporalSocio TS
     WHERE NOT EXISTS (
         SELECT 1 FROM dbsl.Socio S  WHERE S.NroSocio = CAST(SUBSTRING(TS.NroSocio, 4, 4) AS INT)
     )
@@ -88,32 +89,21 @@ BEGIN
 	INNER JOIN dbsl.GrupoFamiliar GF 
 		ON GF.Dni = S.Dni
 	WHERE S.idGrupoFamiliar IS NULL;
-
 	SELECT * FROM dbsl.Socio S ORDER BY idGrupoFamiliar
 	SELECT * FROM dbsl.GrupoFamiliar G
 
     PRINT 'Importación completada correctamente.'
-
-	DROP TABLE #TemporalSocio
 END
 
-EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
---EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
-
+EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
 
 SELECT * FROM dbsl.Socio
 SELECT * FROM dbsl.GrupoFamiliar
 DELETE FROM dbsl.Socio
 
-
-CREATE OR ALTER PROCEDURE dbsl.spImportarGrupoFamiliar
-    @RutaArchivo NVARCHAR(300)
-AS
-BEGIN
-    SET NOCOUNT ON
-
-	CREATE TABLE #TemporalGrupoFamiliar
+CREATE TABLE dbsl.TemporalGrupoFamiliar
 (
 	NroSocio VARCHAR(50),
     ResponsableNombre VARCHAR(50),
@@ -128,13 +118,21 @@ BEGIN
     NumeroObraSocial VARCHAR(60),
 	ContactoObraSocial VARCHAR(30)
 )
+--DROP TABLE dbsl.TemporalGrupoFamiliar
 
+CREATE OR ALTER PROCEDURE dbsl.spImportarGrupoFamiliar
+    @RutaArchivo NVARCHAR(300)
+AS
+BEGIN
+    SET NOCOUNT ON
+
+    DELETE FROM dbsl.TemporalGrupoFamiliar; --Eliminamos el contenido de la tabla temporal
 
     -- Importar datos del archivo CSV 
 
     DECLARE @sql NVARCHAR(MAX)
     SET @sql = '
-    BULK INSERT #TemporalGrupoFamiliar
+    BULK INSERT dbsl.TemporalGrupoFamiliar
     FROM ''' + @RutaArchivo + '''
     WITH (
         FIRSTROW = 2,
@@ -170,7 +168,7 @@ BEGIN
     TG.Email,
     TG.ObraSocial,
     TG.NumeroObraSocial
-	FROM #TemporalGrupoFamiliar TG
+	FROM dbsl.TemporalGrupoFamiliar TG
 	WHERE NOT EXISTS (
     SELECT 1 FROM dbsl.Socio S
     WHERE S.NroSocio = CAST(SUBSTRING(TG.NroSocio, 4, 4) AS INT)
@@ -178,24 +176,21 @@ BEGIN
 	UPDATE S
 	SET S.idGrupoFamiliar = GF.idGrupo
 	FROM dbsl.Socio S
-	INNER JOIN #TemporalGrupoFamiliar TG
+	INNER JOIN dbsl.TemporalGrupoFamiliar TG
 		ON S.NroSocio = CAST(SUBSTRING(TG.NroSocio, 4, 4) AS INT)
 	INNER JOIN dbsl.Socio SR -- socio responsable
 		ON SR.NroSocio = TRY_CAST(SUBSTRING(TG.ResponsableNombre, 4, 4) AS INT)
 	INNER JOIN dbsl.GrupoFamiliar GF
 		ON GF.Dni = SR.Dni
-	WHERE S.idGrupoFamiliar IS NULL;
-	
+	WHERE S.idGrupoFamiliar IS NULL; 
 	SELECT * FROM dbsl.Socio S ORDER BY S.idGrupoFamiliar
 
     PRINT 'Importacion completada correctamente.'
-
-	DROP TABLE #TemporalGrupoFamiliar
 END
 
-EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
+--EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\arima\OneDrive\Documentos\UNLAM\BASES DE DATOS APLICADA\Grupo_familiar .csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
---EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
+EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
 select * from dbsl.Socio
 
 ----------------------------Carga Categoria de socio-----------------------------------------------------------------------------------------------
@@ -225,6 +220,12 @@ BEGIN
 
 END
 GO
+
+ALTER TABLE dbsl.CategoriaSocio
+ADD VigenteHasta VARCHAR(15)
+
+--ALTER TABLE dbsl.CategoriaSocio
+--ADD Costo INT
 
 EXEC dbsl.CargarEditarCategoriaSocio 'Menor',0,12,10000,'31/05/2025','c'
 EXEC dbsl.CargarEditarCategoriaSocio 'Cadete',13,17,15000,'31/05/2025','c'
@@ -273,12 +274,22 @@ EXEC dbsl.CargarEditarActividad '31/05/2025','Ajedrez', 2000,'c'
 SELECT * FROM dbsl.Actividad
 SELECT * FROM dbsl.PresentismoClases
 
+SELECT * FROM dbsl.PiletaVerano
+
+----------------------------Carga Pileta Verano-----------------------------------------------------------------------------------------------
+ALTER TABLE dbsl.PiletaVerano
+ADD TipoDePase VARCHAR(20), -- Dia, mes , temporada
+	CostoSocioAdulto INT,
+    CostoInvitadoAdulto INT,
+    CostoSocioMenor INT,
+    CostoInvitadoMenor INT
+
 ---------------------------Cargar Lluvia-----------------------------------------------------------------------------------
 CREATE VIEW dbsl.VLluviaDia AS
 	SELECT
 			fecha,
 			CASE
-				WHEN SUM(CASE WHEN Precipitacion > 0 THEN 1 ELSE 0 END) > 0 THEN 1
+				WHEN SUM(CASE WHEN lluvia > 0 THEN 1 ELSE 0 END) > 0 THEN 1
 			ELSE 0
 			END AS llovio
 	FROM dbsl.Lluvia
@@ -286,7 +297,6 @@ CREATE VIEW dbsl.VLluviaDia AS
 	GROUP BY fecha
 
 SELECT*FROM dbsl.Lluvia
-SELECT*FROM dbsl.PiletaVerano
 
 CREATE OR ALTER PROCEDURE dbsl.ActualizarLluviaDesdeArchivo
     @RutaArchivo NVARCHAR(300)
@@ -319,11 +329,11 @@ BEGIN
 	EXEC sp_executesql @sql
 
     -- Insertar los datos en la tabla Lluvia
-    INSERT INTO dbsl.Lluvia (fecha, hora, Precipitacion)
+    INSERT INTO dbsl.Lluvia (fecha, hora, lluvia)
     SELECT
         CAST(LEFT(time, 10) AS DATE),
         CAST(SUBSTRING(time, 12, 5) + ':00' AS TIME),
-        Precipitacion
+        lluvia
     FROM #TempLluvia
 
 
@@ -335,15 +345,15 @@ BEGIN
 	 DROP TABLE #TempLluvia
 END
 
-EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
---EXEC dbsl.ActualizarLluviaDesdeArchivo 'C:\Users\leand\Desktop\TPI-2025-1C\open-meteo-buenosaires_2025.csv'
+--EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
+EXEC dbsl.ActualizarLluviaDesdeArchivo 'C:\Users\leand\Desktop\TPI-2025-1C\open-meteo-buenosaires_2025.csv'
 
 ------------------------------------CARGAR PiletaVerano------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE dbsl.CrearTablaTemporalTarifaPileta
 AS
 BEGIN
-	CREATE TABLE #TemporalTarifaPileta (
+	CREATE TABLE dbsl.TemporalTarifaPileta (
     TipoDePase VARCHAR(20),
     VigenteHasta DATE,
     CostoSocioAdulto INT,
@@ -352,13 +362,11 @@ BEGIN
     CostoInvitadoMenor INT
 	)
 
-	INSERT INTO #TemporalTarifaPileta
+	INSERT INTO dbsl.TemporalTarifaPileta
 	VALUES
 	('Día', '2025-02-28', 25000, 30000, 15000, 2000),
 	('Temporada', '2025-02-28', 2000000, 0, 1200000, 0),
-	('Mes', '2025-02-28', 625000, 0, 375000, 0)
-
-	DROP TABLE #TemporalTarifaPileta
+	('Mes', '2025-02-28', 625000, 0, 375000, 0);
 
 END
 
@@ -367,22 +375,7 @@ END
 CREATE OR ALTER PROCEDURE dbsl.spCargarPiletaVerano
 AS
 BEGIN
-    SET NOCOUNT ON
-
-	CREATE TABLE #TemporalTarifaPileta (
-    TipoDePase VARCHAR(20),
-    VigenteHasta DATE,
-    CostoSocioAdulto INT,
-    CostoInvitadoAdulto INT,
-    CostoSocioMenor INT,
-    CostoInvitadoMenor INT
-	)
-
-	INSERT INTO #TemporalTarifaPileta
-	VALUES
-	('Día', '2025-02-28', 25000, 30000, 15000, 2000),
-	('Temporada', '2025-02-28', 2000000, 0, 1200000, 0),
-	('Mes', '2025-02-28', 625000, 0, 375000, 0)
+    SET NOCOUNT ON;
 
     DECLARE 
         @fecha DATE = '2024-12-01',
@@ -393,43 +386,34 @@ BEGIN
         -- Día-------------------------------------
         INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
         SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
-        FROM #TemporalTarifaPileta
+        FROM dbsl.TemporalTarifaPileta
         WHERE TipoDePase = 'Día';
 
         -- Temporada--------------------------
         INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
         SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
-        FROM #TemporalTarifaPileta
+        FROM dbsl.TemporalTarifaPileta
         WHERE TipoDePase = 'Temporada';
 
         -- Mes------------------------
         INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
         SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
-        FROM #TemporalTarifaPileta
+        FROM dbsl.TemporalTarifaPileta
         WHERE TipoDePase = 'Mes';
 
         SET @fecha = DATEADD(DAY, 1, @fecha);
     END
 
-    PRINT 'Carga de PiletaVerano completada correctamente.'
-
-	
+    PRINT 'Carga de PiletaVerano completada correctamente.';
 END
 
 --Ejecutar los dos al mismo tiempo
---EXEC dbsl.CrearTablaTemporalTarifaPileta
+EXEC dbsl.CrearTablaTemporalTarifaPileta
 EXEC dbsl.spCargarPiletaVerano
 
 SELECT * from dbsl.PiletaVerano
 
-
-CREATE OR ALTER PROCEDURE dbsl.spImportarPresentismo
-    @RutaArchivo NVARCHAR(300)
-AS
-BEGIN
-    SET NOCOUNT ON
-
-	CREATE  TABLE #TemporalPresentismo
+CREATE  TABLE dbsl.TemporalPresentismo
 (
 	NroSocio VARCHAR(50),
     Actividad VARCHAR(50),
@@ -442,13 +426,23 @@ BEGIN
 	Nada4 VARCHAR(50) NULL
 
 )
+--DROP TABLE dbsl.TemporalPresentismo
+
+
+CREATE OR ALTER PROCEDURE dbsl.spImportarPresentismo
+    @RutaArchivo NVARCHAR(300)
+AS
+BEGIN
+    SET NOCOUNT ON;
 
     BEGIN TRY
-       
-        -- Armar BULK INSERT dinámico
+        -- 1. Limpiar la tabla temporal
+        DELETE FROM dbsl.TemporalPresentismo;
+
+        -- 2. Armar BULK INSERT dinámico
         DECLARE @sql NVARCHAR(MAX);
         SET @sql = '
-        BULK INSERT #TemporalPresentismo
+        BULK INSERT dbsl.TemporalPresentismo
         FROM ''' + @RutaArchivo + '''
         WITH (
             FIRSTROW = 2,
@@ -461,7 +455,7 @@ BEGIN
 
         EXEC sp_executesql @sql;
 
-        -- Insertar en tabla final
+        -- 3. Insertar en tabla final
         INSERT INTO dbsl.PresentismoClases (
             NombreActividad,
             NroSocio,
@@ -473,8 +467,8 @@ BEGIN
             TRY_CAST(SUBSTRING(TP.NroSocio, 4, 4) AS INT),
             TRY_CONVERT(DATE, LTRIM(RTRIM(TP.FechaDeAsistencia)), 103),
             LEFT(RTRIM(TP.Asistencia), 1)
-        FROM #TemporalPresentismo TP;
-		SELECT * FROM #TemporalPresentismo
+        FROM dbsl.TemporalPresentismo TP;
+		SELECT * FROM dbsl.TemporalPresentismo
         PRINT 'Importación exitosa.';
 
     END TRY
@@ -487,16 +481,9 @@ BEGIN
 	SET P.idActividad = A.idActividad
 	FROM dbsl.PresentismoClases P
 	JOIN dbsl.Actividad A ON P.NombreActividad = A.NombreActividad
-
-	UPDATE 
-
-	DROP TABLE #TemporalPresentismo
 END
 
-EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
---EXEC dbsl.spImportarPresentismo 'C:\Users\Usuario\Desktop\presentismo_actividades.csv'
-
-SELECT * FROM dbsl.PresentismoClases
+EXEC dbsl.spImportarPresentismo 'C:\Users\Usuario\Desktop\presentismo_actividades.csv'
 
 CREATE OR ALTER PROCEDURE dbsl.spActualizaCategoriaSocio
 AS
@@ -524,15 +511,9 @@ SELECT * from dbsl.PresentismoClases
 SELECT * FROM dbsl.Actividad
 SELECT * from dbsl.Socio
 SELECT * FROM dbsl.Clase
-SELECT * FROM dbsl.Inscripcion
 
-CREATE OR ALTER PROCEDURE dbsl.spImportarClases
-    @RutaArchivo NVARCHAR(300)
-AS
-BEGIN
-    SET NOCOUNT ON
 
-	CREATE  TABLE #TemporalClases
+CREATE  TABLE dbsl.TemporalClases
 (
 	Estado VARCHAR(50),
 	Horario VARCHAR(50),
@@ -541,11 +522,22 @@ BEGIN
 	idActividad VARCHAR(50)
 	
 )
+--DROP TABLE dbsl.TemporalClases
 
-        -- Armar BULK INSERT dinámico
+
+CREATE OR ALTER PROCEDURE dbsl.spImportarClases
+    @RutaArchivo NVARCHAR(300)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+        -- 1. Limpiar la tabla temporal
+        DELETE FROM dbsl.TemporalClases;
+
+        -- 2. Armar BULK INSERT dinámico
         DECLARE @sql NVARCHAR(MAX);
         SET @sql = '
-        BULK INSERT #TemporalClases
+        BULK INSERT dbsl.TemporalClases
         FROM ''' + @RutaArchivo + '''
         WITH (
             FIRSTROW = 2,
@@ -558,7 +550,7 @@ BEGIN
 
         EXEC sp_executesql @sql;
 
-        -- Insertar en tabla final
+        -- 3. Insertar en tabla final
         INSERT INTO dbsl.Clase (
             Estado,
             Horario,
@@ -572,28 +564,20 @@ BEGIN
             TC.Dia,
             TC.Categoria,
 			TC.idActividad
-        FROM #TemporalClases TC;
-		SELECT * FROM #TemporalClases
-        PRINT 'Importación exitosa.'
-
-		DROP TABLE #TemporalClases
+        FROM dbsl.TemporalClases TC;
+		SELECT * FROM dbsl.TemporalClases
+        PRINT 'Importación exitosa.';
 
 END
+EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
 
-EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
---EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
 
-SELECT * FROM dbsl.Cobro  
 SELECT * FROM dbsl.Clase
-SELECT * FROM dbsl.Colonia 
 SELECT * FROM dbsl.PresentismoClases
 SELECT * FROM dbsl.Actividad
 SELECT * FROM dbsl.Socio
 SELECT * FROM dbsl.CategoriaSocio
-SELECT * FROM dbsl.Inscripcion  
-SELECT * FROM dbsl.Invitado
 drop table dbsl.Clase
-
 ------REPORTE 3 NO TOCAR
 SELECT 
     CS.NombreCategoria,

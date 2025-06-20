@@ -89,13 +89,6 @@ CREATE TABLE dbsl.Reserva (
     fechaFin Date
 );
 
-CREATE TABLE dbsl.Lluvia(
-	Fecha DATE,
-	Hora TIME,
-	Precipitacion FLOAT
-	CONSTRAINT PKLluvia PRIMARY KEY (fecha, hora)
-)
-
 CREATE TABLE dbsl.PiletaVerano(
     idPileta INT IDENTITY(1,1) PRIMARY KEY,
     Fecha DATE,
@@ -195,41 +188,25 @@ CREATE TABLE dbsl.PresentismoClases(
 ALTER TABLE dbsl.PresentismoClases ADD idClase INT FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase)
  
 drop table dbsl.Colonia
-go
 drop table dbsl.DetalleFactura
-go
 drop table dbsl.Cobro
-go
 drop table dbsl.Factura
-go
 drop table dbsl.MetodoPago
-go
 drop table dbsl.Invitado
-go
 drop table dbsl.Inscripcion
-go
 drop table dbsl.Reserva
-go
-drop table dbsl.Suum
-go
+drop table dbsl.Suum 
 drop table dbsl.Clase
-go
-drop table dbsl.Actividad
-go
+drop table dbsl.Actividad 
 drop table dbsl.Usuario
-go
 drop table dbsl.Socio
-go
-drop table dbsl.Categoria
-go
+drop table dbsl.CategoriaSocio
 drop table dbsl.GrupoFamiliar
-go
 drop table dbsl.PresentismoClases
-go
-drop table dbsl.Categoria
-drop table dbsl.Factura
 drop table dbsl.Reembolso
-drop table dbsl.Lluvia
+drop table dbsl.PiletaVerano
+drop table dbsl.Categoria
+drop table dbsl.LLuvia
 
 
 
