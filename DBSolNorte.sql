@@ -203,7 +203,10 @@ drop table dbsl.Socio
 drop table dbsl.CategoriaSocio
 drop table dbsl.GrupoFamiliar
 drop table dbsl.PresentismoClases
-
+drop table dbsl.Reembolso
+drop table dbsl.PiletaVerano
+drop table dbsl.Categoria
+drop table dbsl.LLuvia
 
 
 

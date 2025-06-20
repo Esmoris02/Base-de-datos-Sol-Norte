@@ -23,22 +23,6 @@ EXEC dbsl.InsertarCategoriaSocio 'Adulto', 0, 64,1
 
 --Error esperado:'El Nombre de Categoria ya existe.'
 EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17,10
-
-
-
---select * from dbsl.CategoriaSocio
----------INSERTAR GRUPO FAMILIAR-------------
---Se espera que se ingrese correctamente
-EXEC dbsl.insertarGrupoFamiliar 'Laura González', 30111222
---Se espera que se ingrese correctamente
-EXEC dbsl.insertarGrupoFamiliar 'Carlos Pérez', 34444555
---Se espera que se ingrese correctamente
-EXEC dbsl.insertarGrupoFamiliar 'Juan Romero', 42005678
---Error esperado:'Informacion ingresada incorrecta'
-EXEC dbsl.insertarGrupoFamiliar '', 45656668
---Error esperado: 'Ya existe un responsable con ese DNI en otro grupo familiar' 
-EXEC dbsl.insertarGrupoFamiliar 'Marcelo González', 30111222
-
 ---------INSEERTAR SOCIO-------------
 --Se espera que se inserte correctamente
 EXEC dbsl.InsertarSocio
@@ -86,6 +70,22 @@ EXEC dbsl.InsertarSocio
 	'1144556677','1133221100','','OSDE','123456789',3,NULL;
 
 --select * from dbsl.Socio
+
+
+--select * from dbsl.CategoriaSocio
+---------INSERTAR GRUPO FAMILIAR-------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarGrupoFamiliar 'Laura González', 30111222
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarGrupoFamiliar 'Carlos Pérez', 34444555
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarGrupoFamiliar 'Juan Romero', 42005678
+--Error esperado:'Informacion ingresada incorrecta'
+EXEC dbsl.insertarGrupoFamiliar '', 45656668
+--Error esperado: 'Ya existe un responsable con ese DNI en otro grupo familiar' 
+EXEC dbsl.insertarGrupoFamiliar 'Marcelo González', 30111222
+
+
 --------------INSERTAR Usuario --------------
 --Error esperado "El rol ingresado no es válido. Debe ser: "administrador","profesor" o "socio""
 EXEC dbsl.insertarUsuario 'admin1', 'activo', CONVERT(VARBINARY(256), 'Admin123!'), 'ministro', '2024-12-31', NULL
@@ -109,16 +109,16 @@ EXEC dbsl.InsertarActividad 'activo', 'Natación', -3000
 --Error Esperado: "Estado incorrecto. Establece "activo" o "inactivo""
 EXEC dbsl.InsertarActividad 'empty', 'Zumba', 1800
 --Se espera que se inserte correctamente
-EXEC dbsl.InsertarActividad 'activo', 'Gimnasio Funcional', 2200
+EXEC dbsl.InsertarActividad 'activo', 'Ajedrez', 2200
 --Se espera que se inserte correctamente
-EXEC dbsl.InsertarActividad 'inactivo', 'Tenis', 2000
+EXEC dbsl.InsertarActividad 'activo', 'Futsal', 2000
 
 --select * from dbsl.Actividad
 -------------INSERTAR CLASE---------------------
 --Error esperado : "Ingresa un horario valido entre las 08:00 y 22:00 en intervalos de 30 min"
 EXEC dbsl.InsertarClase 'activo', 'Lunes', '03:00', 'Adulto', 1
---Error esperado: "Ingresa un dia valido."( se debe ingresar un dia de la semana)
-EXEC dbsl.InsertarClase 'activo', 'Papafrita', '10:30', 'Cadete', 2
+--Se espera que se inserte correctamente
+EXEC dbsl.InsertarClase 'activo', 'Jueves', '10:30', 'Cadete', 1
 --Se espera que se inserte correctamente
 EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Adulto', 1
 --Error esperado:"Ya existe una clase para esa actividad, día y horario."
@@ -156,22 +156,6 @@ EXEC dbsl.InsertarSum @Descripcion = 'abc', @Precio = 100
 EXEC dbsl.InsertarReserva @idSum = 1,@FechaReserva = '2025-12-28',@HoraInicio = '10:00',@HoraFin = '12:00';
 
 --select* from dbsl.Reserva
-
-----------------INSERTAR INSCRIPCION-----------------------
-
--- Actividad
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
--- Reserva de SUM
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idReserva = 1, @FechaIn = '2025-12-22';
--- Colonia
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
-
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
-
---select * from dbsl.Inscripcion
-
-
-
 --------------INSERTAR PILETVERANO-------------------
 -- Valor del Mes
 EXEC dbsl.insertarPiletaVerano 
@@ -185,6 +169,20 @@ EXEC dbsl.insertarPiletaVerano
 --select * from dbsl.PiletaVerano
 -- Valor de Temporada
 EXEC dbsl.insertarPiletaVerano '2025-12-21','Valor de Temporada',60000,0,50000,0,0
+----------------INSERTAR INSCRIPCION-----------------------
+
+-- Actividad
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
+
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 2, @FechaIn = '2025-12-20';
+-- Reserva de SUM
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idReserva = 1, @FechaIn = '2025-12-22';
+-- Colonia
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
+
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
+
+--select * from dbsl.Inscripcion
 
 --------------INSERTAR INVITADO------------------------
 --Se espera que se ingrese correctamente
@@ -228,11 +226,9 @@ SELECT * FROM dbsl.DetalleFactura;
 --DELETE FROM dbsl.Factura;
 ----------------INSERTAR COBRO----------------------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=2;
+EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=1;
 --Error esperado:'Metodo de pago inexistente.'
-EXEC dbsl.insertarCobro 
---Error esperado:'Factura no existente.'
-EXEC dbsl.insertarCobro 
+EXEC dbsl.insertarCobro  @idFactura=3,@idMetodoPago=9;
 
 --select * from dbsl.Cobro
 
@@ -240,6 +236,8 @@ EXEC dbsl.insertarCobro
 -- Reembolso directo al mismo medio de pago del cobro
 EXEC dbsl.InsertarReembolso @idCobro = 1,@NroSocio=1001,@Porcentaje = 60,@Motivo = 'Reintegro por lluvia',@PagoACuenta = 0;
 
+--select * from dbsl.Cobro
+--delete from dbsl.Cobro
 -- Reembolso como saldo a favor
 EXEC dbsl.InsertarReembolso @idCobro = 1,@NroSocio=1001,@Porcentaje = 100,@Motivo = 'Suspensión por fuerza mayor',@PagoACuenta = 1;
 select * from dbsl.Reembolso
