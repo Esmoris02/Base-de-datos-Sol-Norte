@@ -452,7 +452,92 @@ BEGIN
 	VALUES (@FechaEmision, @FechaVencimiento, @FechaSegundoVencimiento, @Estado, @Total, @idInscripcion)
 END
 GO
+------- Reembolso---------
+IF OBJECT_ID('dbsl.InsertarReembolso', 'P') IS NOT NULL
+DROP PROCEDURE dbsl.InsertarReembolso;
+GO
 
+CREATE PROCEDURE dbsl.InsertarReembolso
+    @idCobro INT,
+    @NroSocio INT,
+    @Porcentaje DECIMAL(5,2),
+    @Motivo VARCHAR(255),
+    @PagoACuenta BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validaciones básicas
+    IF @Porcentaje <= 0 OR @Porcentaje > 100
+    BEGIN
+        RAISERROR('El porcentaje debe estar entre 0 y 100.', 16, 1);
+        RETURN;
+    END
+
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Cobro WHERE idCobro = @idCobro)
+    BEGIN
+        RAISERROR('El cobro indicado no existe.', 16, 1);
+        RETURN;
+    END
+
+    IF NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE NroSocio = @NroSocio)
+    BEGIN
+        RAISERROR('El socio indicado no existe.', 16, 1);
+        RETURN;
+    END
+
+    DECLARE @MontoCobrado INT,
+            @MontoReembolso INT,
+            @MetodoPago VARCHAR(50);
+
+    -- Obtener monto y método de pago desde el cobro
+    SELECT 
+        @MontoCobrado = C.Monto,
+        @MetodoPago = MP.Descripcion
+    FROM dbsl.Cobro C
+    JOIN dbsl.MetodoPago MP ON C.idMetodoPago = MP.idMetodoPago
+    WHERE C.idCobro = @idCobro;
+
+    IF @MontoCobrado IS NULL
+    BEGIN
+        RAISERROR('No se pudo obtener el monto del cobro.', 16, 1);
+        RETURN;
+    END
+
+    SET @MontoReembolso = CAST(@MontoCobrado * (@Porcentaje / 100.0) AS INT);
+
+    -- Si es pago a cuenta, registrar texto personalizado
+    IF @PagoACuenta = 1
+        SET @MetodoPago = 'Pago a cuenta';
+	
+	DECLARE @TotalReembolsado INT = (
+    SELECT ISNULL(SUM(Monto), 0)
+    FROM dbsl.Reembolso
+    WHERE idCobro = @idCobro
+	);
+
+	IF (@TotalReembolsado + @MontoReembolso) > @MontoCobrado
+	BEGIN
+		RAISERROR('La suma de los reembolsos supera el monto del cobro original.', 16, 1);
+		RETURN;
+	END
+    -- Insertar reembolso
+    INSERT INTO dbsl.Reembolso (
+        idCobro, MetodoPago, Porcentaje, Monto, Motivo, PagoACuenta
+    )
+    VALUES (
+        @idCobro, @MetodoPago, @Porcentaje, @MontoReembolso, @Motivo, @PagoACuenta
+    );
+
+    -- Si es pago a cuenta, actualizar saldo del socio
+    IF @PagoACuenta = 1
+    BEGIN
+        UPDATE dbsl.Socio
+        SET SaldoFavor = ISNULL(SaldoFavor, 0) + @MontoReembolso
+        WHERE NroSocio = @NroSocio;
+    END
+END;
+GO
 --Cobro-------------------------------------------------
 
 IF OBJECT_ID('dbsl.insertarCobro','P') IS NOT NULL

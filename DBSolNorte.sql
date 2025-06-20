@@ -5,7 +5,7 @@ go
 create schema dbsl
 --data base sol norte
 go
-CREATE TABLE dbsl.CategoriaSocio (
+CREATE TABLE dbsl.Categoria(
     idCategoria INT IDENTITY(1,1) PRIMARY KEY,
     NombreCategoria VARCHAR(50),
     EdadDesde INT,
@@ -179,7 +179,18 @@ CREATE TABLE dbsl.DetalleFactura (
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
 )
 go
-
+CREATE TABLE dbsl.Reembolso (
+    idReembolso INT IDENTITY(1,1) PRIMARY KEY,
+    idCobro INT NOT NULL,
+    MetodoPago VARCHAR(50),
+    Porcentaje DECIMAL(5,2) NOT NULL CHECK (Porcentaje > 0 AND Porcentaje <= 100),
+    Monto INT NOT NULL,
+    Motivo VARCHAR(255) NOT NULL,
+    FechaReembolso DATE NOT NULL DEFAULT GETDATE(),
+    PagoACuenta BIT NOT NULL DEFAULT 0,
+    FOREIGN KEY (idCobro) REFERENCES dbsl.Cobro(idCobro),
+);
+go
  
 --drop table dbsl.Colonia,dbsl.DetalleFactura,dbsl.Cobro,dbsl.Factura,dbsl.MetodoPago,dbsl.Invitado,dbsl.Inscripcion,dbsl.Reserva,dbsl.Suum,dbsl.Clase,dbsl.Actividad,dbsl.Usuario,dbsl.Socio,dbsl.CategoriaSocio,dbsl.GrupoFamiliar,dbsl.PiletaVerano
 

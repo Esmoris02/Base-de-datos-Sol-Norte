@@ -133,6 +133,45 @@ EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Cadete', 99
 EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Usuario', 2
 
 --select * from dbsl.Clase
+---------------INSERTAR COLONIA--------------------
+EXEC dbsl.InsertarColonia 
+    @Nombre = 'Colonia Enero',
+    @Descripcion = 'Actividades recreativas para menores durante enero',
+    @Costo = 28000,
+    @fechaInicio = '2025-01-02',
+    @fechaFin = '2025-01-31';
+--select * from dbsl.Colonia
+----------------INSERTAR SUM------------------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 150
+--Error esperado:'El precio debe ser mayor a 0'
+EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 0
+--Error esperado:'Descripcion invalida. Minimo de 5 y maximo de 100'
+EXEC dbsl.InsertarSum @Descripcion = 'abc', @Precio = 100
+
+
+--select * from dbsl.Suum
+----------------INSERTAR RESERVA--------------------------
+--Se espera que se ingrese correctamente
+EXEC dbsl.InsertarReserva @idSum = 1,@FechaReserva = '2025-12-28',@HoraInicio = '10:00',@HoraFin = '12:00';
+
+--select* from dbsl.Reserva
+
+----------------INSERTAR INSCRIPCION-----------------------
+
+-- Actividad
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
+-- Reserva de SUM
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idReserva = 1, @FechaIn = '2025-12-22';
+-- Colonia
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
+
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
+
+--select * from dbsl.Inscripcion
+
+
+
 --------------INSERTAR PILETVERANO-------------------
 -- Valor del Mes
 EXEC dbsl.insertarPiletaVerano 
@@ -196,45 +235,14 @@ EXEC dbsl.insertarCobro
 EXEC dbsl.insertarCobro 
 
 --select * from dbsl.Cobro
-----------------INSERTAR SUM------------------------------
---Se espera que se ingrese correctamente
-EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 150
---Error esperado:'El precio debe ser mayor a 0'
-EXEC dbsl.InsertarSum @Descripcion = 'Sum quincho', @Precio = 0
---Error esperado:'Descripcion invalida. Minimo de 5 y maximo de 100'
-EXEC dbsl.InsertarSum @Descripcion = 'abc', @Precio = 100
 
+------Insertar Cobro ------
+-- Reembolso directo al mismo medio de pago del cobro
+EXEC dbsl.InsertarReembolso @idCobro = 1,@NroSocio=1001,@Porcentaje = 60,@Motivo = 'Reintegro por lluvia',@PagoACuenta = 0;
 
---select * from dbsl.Suum
-----------------INSERTAR RESERVA--------------------------
---Se espera que se ingrese correctamente
-EXEC dbsl.InsertarReserva @idSum = 1,@FechaReserva = '2025-12-28',@HoraInicio = '10:00',@HoraFin = '12:00';
-
---select* from dbsl.Reserva
-
-----------------INSERTAR INSCRIPCION-----------------------
-
--- Actividad
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
--- Reserva de SUM
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idReserva = 1, @FechaIn = '2025-12-22';
--- Colonia
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
-
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
-
---select * from dbsl.Inscripcion
-
----------------INSERTAR COLONIA--------------------
-EXEC dbsl.InsertarColonia 
-    @Nombre = 'Colonia Enero',
-    @Descripcion = 'Actividades recreativas para menores durante enero',
-    @Costo = 28000,
-    @fechaInicio = '2025-01-02',
-    @fechaFin = '2025-01-31';
---select * from dbsl.Colonia
-
-
-
+-- Reembolso como saldo a favor
+EXEC dbsl.InsertarReembolso @idCobro = 1,@NroSocio=1001,@Porcentaje = 100,@Motivo = 'Suspensión por fuerza mayor',@PagoACuenta = 1;
+select * from dbsl.Reembolso
+--delete from dbsl.Reembolso
 
 
