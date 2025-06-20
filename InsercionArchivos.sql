@@ -81,13 +81,21 @@ BEGIN
     WHERE NOT EXISTS (
         SELECT 1 FROM dbsl.Socio S  WHERE S.NroSocio = CAST(SUBSTRING(TS.NroSocio, 4, 4) AS INT)
     )
+	UPDATE S
+	SET S.idGrupoFamiliar = GF.idGrupo
+	FROM dbsl.Socio S
+	INNER JOIN dbsl.GrupoFamiliar GF 
+		ON GF.Dni = S.Dni
+	WHERE S.idGrupoFamiliar IS NULL;
+	SELECT * FROM dbsl.Socio S ORDER BY idGrupoFamiliar
+	SELECT * FROM dbsl.GrupoFamiliar G
 
     PRINT 'Importación completada correctamente.'
 END
 
-EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
-
+EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
 
 SELECT * FROM dbsl.Socio
 SELECT * FROM dbsl.GrupoFamiliar
@@ -108,7 +116,7 @@ CREATE TABLE dbsl.TemporalGrupoFamiliar
     NumeroObraSocial VARCHAR(60),
 	ContactoObraSocial VARCHAR(30)
 )
-DROP TABLE dbsl.TemporalGrupoFamiliar
+--DROP TABLE dbsl.TemporalGrupoFamiliar
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarGrupoFamiliar
     @RutaArchivo NVARCHAR(300)
@@ -136,39 +144,51 @@ BEGIN
 
     --Insertar socios (evitar duplicados)
     INSERT INTO dbsl.Socio (
-			NroSocio,
-            Nombre,
-            Apellido,
-            Dni,
-            FechaNac,
-            Telefono,
-            TelefonoEmergencia,
-            Email,
-            ObraSocial,
-            NumeroObraSocial
-			)
-    SELECT
-		CAST(SUBSTRING(NroSocio, 4, 4) AS INT),  --castea el nro de socio que venia como un varchar, toma 4 caracteres a partir de la posición 4 y lo toma como un INT
-		Nombre,
-		Apellido,
-		Dni,
-		TRY_CONVERT(DATE, LTRIM(RTRIM(FechaNac)), 103),    --Limpia espacios en blanco y convierte la fecha en formato DATE, aaaa mm dd
-        Telefono,
-        TelefonoEmergencia,
-        Email,
-        ObraSocial,
-        NumeroObraSocial
-    FROM dbsl.TemporalGrupoFamiliar TG
-    WHERE NOT EXISTS (
-        SELECT 1 FROM dbsl.Socio S  WHERE  S.NroSocio = CAST(SUBSTRING(TG.NroSocio, 4, 4) AS INT)
-    )
+			 NroSocio,
+    Nombre,
+    Apellido,
+    Dni,
+    FechaNac,
+    Telefono,
+    TelefonoEmergencia,
+    Email,
+    ObraSocial,
+    NumeroObraSocial
+)
+SELECT
+    CAST(SUBSTRING(TG.NroSocio, 4, 4) AS INT),
+    TG.Nombre,
+    TG.Apellido,
+    TG.Dni,
+    TRY_CONVERT(DATE, LTRIM(RTRIM(TG.FechaNac)), 103),
+    TG.Telefono,
+    TG.TelefonoEmergencia,
+    TG.Email,
+    TG.ObraSocial,
+    TG.NumeroObraSocial
+	FROM dbsl.TemporalGrupoFamiliar TG
+	WHERE NOT EXISTS (
+    SELECT 1 FROM dbsl.Socio S
+    WHERE S.NroSocio = CAST(SUBSTRING(TG.NroSocio, 4, 4) AS INT)
+	);
+	UPDATE S
+	SET S.idGrupoFamiliar = GF.idGrupo
+	FROM dbsl.Socio S
+	INNER JOIN dbsl.TemporalGrupoFamiliar TG
+		ON S.NroSocio = CAST(SUBSTRING(TG.NroSocio, 4, 4) AS INT)
+	INNER JOIN dbsl.Socio SR -- socio responsable
+		ON SR.NroSocio = TRY_CAST(SUBSTRING(TG.ResponsableNombre, 4, 4) AS INT)
+	INNER JOIN dbsl.GrupoFamiliar GF
+		ON GF.Dni = SR.Dni
+	WHERE S.idGrupoFamiliar IS NULL; 
+	SELECT * FROM dbsl.Socio S ORDER BY S.idGrupoFamiliar
 
-    PRINT 'Importación completada correctamente.'
+    PRINT 'Importacion completada correctamente.'
 END
 
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\arima\OneDrive\Documentos\UNLAM\BASES DE DATOS APLICADA\Grupo_familiar .csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
-
+EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
 select * from dbsl.Socio
 
 ----------------------------Carga Categoria de socio-----------------------------------------------------------------------------------------------
