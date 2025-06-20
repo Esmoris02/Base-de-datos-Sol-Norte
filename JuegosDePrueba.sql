@@ -180,8 +180,8 @@ EXEC dbsl.GenerarFactura 0
 --Error esperado: 'El ID de socio debe ser un número positivo.'
 EXEC dbsl.GenerarFactura -5;
 
---SELECT * FROM dbsl.Factura;
---SELECT * FROM dbsl.DetalleFactura;
+SELECT * FROM dbsl.Factura;
+SELECT * FROM dbsl.DetalleFactura;
 
 --DELETE FROM dbsl.DetalleFactura;
 --DELETE FROM dbsl.Factura;

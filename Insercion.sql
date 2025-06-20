@@ -772,6 +772,11 @@ END
 GO
 
 --Generacion de Factura--------------------
+--Nota: Al generar una factura, se inclulle en el detalle factura que estan en inscripción. A excepción de las clases de las
+--actividades, solo se incluirá los items en la primera factura generada, ej: si yo genero una reserva para el sum, se registrará 
+--en la primera factura generada de ese socio después de la inscripción. Si se genera otra, esta no aparecerá. Si quiero otra reserva, 
+--deveré realizar otra inscripción. Las actividades se consideran como una "subscripción mensual", y se incluiran enncada factura generada
+-- mientras exista esa inscripción
 IF OBJECT_ID('dbsl.GenerarFactura','P') IS NOT NULL
 DROP PROCEDURE dbsl.GenerarFactura
 GO
@@ -833,7 +838,10 @@ BEGIN
 		I.idInscripcion
 	FROM dbsl.Inscripcion I
 	JOIN dbsl.Colonia C ON I.idColonia = C.idColonia
-	WHERE I.NroSocio = @idSocio AND I.idColonia IS NOT NULL;
+	WHERE I.NroSocio = @idSocio AND I.idColonia IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM dbsl.DetalleFactura DF
+      WHERE DF.idInscripcion = I.idInscripcion
+  );
 
     -- 4. SUM
     INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
@@ -846,7 +854,10 @@ BEGIN
     FROM dbsl.Inscripcion I
     INNER JOIN dbsl.Reserva R ON I.idReserva = R.idReserva
     INNER JOIN dbsl.Suum S ON R.idSum = S.idSum
-    WHERE I.NroSocio = @idSocio;
+    WHERE I.NroSocio = @idSocio AND NOT EXISTS (
+      SELECT 1 FROM dbsl.DetalleFactura DF
+      WHERE DF.idInscripcion = I.idInscripcion
+  );
 	-- 5. Membresía
 	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
 	SELECT 
@@ -872,7 +883,10 @@ BEGIN
 	JOIN dbsl.PiletaVerano pv ON I.idPileta = pv.idPileta
 	JOIN dbsl.Socio s ON I.NroSocio = s.NroSocio
 	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
-	WHERE I.NroSocio = @idSocio AND I.idPileta IS NOT NULL;
+	WHERE I.NroSocio = @idSocio AND I.idPileta IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM dbsl.DetalleFactura DF
+      WHERE DF.idInscripcion = I.idInscripcion
+  );
 
 	-- DESCUENTO Multiples Actividades
 	DECLARE @CantidadActividades INT;
