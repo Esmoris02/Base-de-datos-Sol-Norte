@@ -772,7 +772,6 @@ END
 GO
 
 --Generacion de Factura--------------------
-
 IF OBJECT_ID('dbsl.GenerarFactura','P') IS NOT NULL
 DROP PROCEDURE dbsl.GenerarFactura
 GO
@@ -812,35 +811,38 @@ BEGIN
     SET @idFactura = SCOPE_IDENTITY();
 
     -- 2. Actividades
-    INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+    INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
     SELECT 
         'Actividad',
         'Inscripción a actividad: ' + A.NombreActividad,
         A.Costo,
-        @idFactura
+        @idFactura,
+		IA.idInscripcion
     FROM dbsl.Inscripcion IA
     INNER JOIN dbsl.Clase C ON IA.idClase = C.idClase
     INNER JOIN dbsl.Actividad A ON C.idActividad = A.idActividad
     WHERE IA.NroSocio = @idSocio;
 
     -- 3. Colonia
-    INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+    INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
 	SELECT 
 		'Colonia',
 		C.Descripcion,
 		C.Costo,
-		@idFactura
+		@idFactura,
+		I.idInscripcion
 	FROM dbsl.Inscripcion I
 	JOIN dbsl.Colonia C ON I.idColonia = C.idColonia
 	WHERE I.NroSocio = @idSocio AND I.idColonia IS NOT NULL;
 
     -- 4. SUM
-    INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+    INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
     SELECT 
         'SUM',
         'Reserva de SUM',
         S.Precio,
-        @idFactura
+        @idFactura,
+		I.idInscripcion
     FROM dbsl.Inscripcion I
     INNER JOIN dbsl.Reserva R ON I.idReserva = R.idReserva
     INNER JOIN dbsl.Suum S ON R.idSum = S.idSum
@@ -856,7 +858,7 @@ BEGIN
 	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
 	WHERE s.NroSocio = @idSocio;
 	-- 6. Pileta de Verano
-	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
+	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
 	SELECT 
 		'Pileta',
 		'Pase a pileta: ' + pv.TipoDePase + ' (' + FORMAT(pv.Fecha, 'dd/MM/yyyy') + ')',
@@ -864,7 +866,8 @@ BEGIN
 			WHEN cs.NombreCategoria = 'Menor' THEN pv.CostoSocioMenor
 			ELSE pv.CostoSocioAdulto
 		END,
-		@idFactura
+		@idFactura,
+		I.idInscripcion
 	FROM dbsl.Inscripcion I
 	JOIN dbsl.PiletaVerano pv ON I.idPileta = pv.idPileta
 	JOIN dbsl.Socio s ON I.NroSocio = s.NroSocio
