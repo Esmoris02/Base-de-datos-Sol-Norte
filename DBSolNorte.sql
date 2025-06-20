@@ -154,11 +154,10 @@ CREATE TABLE dbsl.Factura (
     FechaSegundoVencimiento DATE,
     Estado VARCHAR(20),
     Total INT,
-    idInscripcion INT,
-    FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
+	NroSocio INT
 )
  go
-CREATE TABLE dbsl.Cobro (
+CREATE TABLE  dbsl.Cobro (
     idCobro INT IDENTITY(1,1) PRIMARY KEY,
     FechaCobro DATE NOT NULL DEFAULT GETDATE(),
     idMetodoPago INT NOT NULL,
@@ -168,7 +167,7 @@ CREATE TABLE dbsl.Cobro (
     FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura)
 )
 go
-CREATE TABLE dbsl.DetalleFactura (
+CREATE TABLE  dbsl.DetalleFactura (
     idDetalle INT IDENTITY(1,1) PRIMARY KEY,
     TipoItem VARCHAR(50),
     Descripcion VARCHAR(50),

@@ -891,10 +891,10 @@ BEGIN
 
     -- 1. Crear la factura base
     INSERT INTO dbsl.Factura (
-        FechaEmision, FechaVencimiento, FechaSegundoVencimiento, Estado, Total, idInscripcion
+        FechaEmision, FechaVencimiento, FechaSegundoVencimiento, Estado, Total, NroSocio
     )
     VALUES (
-        @FechaActual, @FechaVencimiento, @FechaSegundoVencimiento, 'Pendiente', 0, NULL
+        @FechaActual, @FechaVencimiento, @FechaSegundoVencimiento, 'Pendiente', 0, @idSocio
     )
 
     SET @idFactura = SCOPE_IDENTITY();
