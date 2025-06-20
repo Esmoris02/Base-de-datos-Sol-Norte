@@ -88,3 +88,8 @@ BEGIN
 END;
 GO
 exec dbsl.ReporteIngresosMensualesPorActividad
+
+-----------------REPORTE 4---------------------------------------------------------------------------------------
+
+SELECT * FROM dbsl.PresentismoClases
+SELECT * FROM dbsl.Clase
