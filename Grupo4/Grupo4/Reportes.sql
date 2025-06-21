@@ -1,6 +1,17 @@
 use ClubSolNorte
 go
---------Reporte 1----------
+---------------------------------REPORTE 1--------------------------------------
+--Reporte de los socios morosos, que hayan incumplido en más de dos oportunidades dado un
+--rango de fechas a ingresar. El reporte debe contener los siguientes datos:
+--Nombre del reporte: Morosos Recurrentes
+--Período: rango de fechas
+--Nro de socio
+--Nombre y apellido.
+--Mes incumplido
+--Ordenados de Mayor a menor por ranking de morosidad
+--El mismo debe ser desarrollado utilizando Windows Function.
+
+-------------------------------------------------------------------------------------
 IF OBJECT_ID('dbsl.ReporteMorososRecurrentes', 'P') IS NOT NULL
 DROP PROCEDURE dbsl.ReporteMorososRecurrentes;
 GO
@@ -52,7 +63,12 @@ BEGIN
 END;
 GO
 exec dbsl.ReporteMorososRecurrentes '2025-01-01','2025-12-31';
--------Reporte 2-----------
+--------------------REPORTE 2-------------------------------------------
+
+--Reporte acumulado mensual de ingresos por actividad deportiva al momento en que se saca
+--el reporte tomando como inicio enero
+
+---------------------------------------------------------------------------
 IF OBJECT_ID('dbsl.ReporteIngresosMensualesPorActividad', 'P') IS NOT NULL
 DROP PROCEDURE dbsl.ReporteIngresosMensualesPorActividad;
 GO
@@ -88,8 +104,54 @@ BEGIN
 END;
 GO
 exec dbsl.ReporteIngresosMensualesPorActividad
+-------------------------REPORTE 3-------------------------------------
+--Reporte de la cantidad de socios que han realizado alguna actividad de forma alternada
+--(inasistencias) por categoría de socios y actividad, ordenado según cantidad de inasistencias
+--ordenadas de mayor a menor.
+---------------------------------------------------------------
+CREATE PROCEDURE dbsl.ReporteTotalInasistenciasPorCategoriaSocioYActividad
+AS
+BEGIN
+	SELECT 
+		CS.NombreCategoria,
+		P.NombreActividad,
+		COUNT(DISTINCT P.NroSocio) AS CantidadSociosConFaltas,
+		COUNT(*) AS TotalInasistencias
+	FROM dbsl.PresentismoClases P
+	JOIN dbsl.Socio S ON P.NroSocio = S.NroSocio
+	JOIN dbsl.CategoriaSocio CS ON S.idCategoria = CS.idCategoria
+	WHERE P.Asistencia = 'A'
+	GROUP BY 
+		CS.NombreCategoria,
+		P.NombreActividad
+	ORDER BY 
+		TotalInasistencias DESC;
+END
+
+EXEC dbsl.ReporteTotalInasistenciasPorCategoriaSocioYActividad
 
 -----------------REPORTE 4---------------------------------------------------------------------------------------
+--Reporte que contenga a los socios que no han asistido a alguna clase de la actividad que
+--realizan. El reporte debe contener: Nombre, Apellido, edad, categoría y la actividad
 
-SELECT * FROM dbsl.PresentismoClases
-SELECT * FROM dbsl.Clase
+--NO FUE TESTEADO TODAVIA DEBIDO A QUE CREAMOS CLASES ALEATORIAS PERO NO TENEMOS IDCLASE EN PRESENTISMO 
+--PORQUE NO VIENE POR INTEGRACION TENDRIAMOS QUE ELEGIRLO EN EL ARCH DE PRUEBA
+--------------------------------------------------------------------------------------------------------
+CREATE PROCEDURE dbsl.ReporteInasistenciasActividad
+AS
+BEGIN
+    SELECT 
+        S.NroSocio,
+        S.Nombre,
+        S.Apellido,
+        DATEDIFF(YEAR, S.FechaNac, GETDATE()) AS Edad,
+        CS.NombreCategoria,
+        A.NombreActividad
+    FROM dbsl.PresentismoClases P
+    INNER JOIN dbsl.Socio S ON P.NroSocio = S.NroSocio
+    INNER JOIN dbsl.CategoriaSocio CS ON S.idCategoria = CS.idCategoria
+    INNER JOIN dbsl.Clase C ON P.idClase = C.idClase
+    INNER JOIN dbsl.Actividad A ON C.idActividad = A.idActividad
+    WHERE P.Asistencia = 'A'
+    ORDER BY S.Apellido, S.Nombre;
+END
