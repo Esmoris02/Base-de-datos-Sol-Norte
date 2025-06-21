@@ -274,69 +274,122 @@ SELECT * FROM dbsl.Actividad
 SELECT * FROM dbsl.PresentismoClases
 
 ---------------------------Cargar Lluvia-----------------------------------------------------------------------------------
-CREATE VIEW dbsl.VLluviaDia AS
-	SELECT
-			fecha,
-			CASE
-				WHEN SUM(CASE WHEN Precipitacion > 0 THEN 1 ELSE 0 END) > 0 THEN 1
-			ELSE 0
-			END AS llovio
-	FROM dbsl.Lluvia
-	WHERE hora BETWEEN '08:00:00' AND '20:00:00'
-	GROUP BY fecha
-
 SELECT*FROM dbsl.Lluvia
+DELETE FROM dbsl.Lluvia
 SELECT*FROM dbsl.PiletaVerano
 
-CREATE OR ALTER PROCEDURE dbsl.ActualizarLluviaDesdeArchivo
-    @RutaArchivo NVARCHAR(300)
+CREATE OR ALTER PROCEDURE dbsl.spImportarLluvia
+    @RutaArchivo NVARCHAR(300),
+    @RutaArchivo2 NVARCHAR(300) = NULL
 AS
 BEGIN
-    SET NOCOUNT ON
+    SET NOCOUNT ON;
 
-    -- Crear tabla temporal para importar los datos del CSV
+    -- 1. Crear tabla temporal real
     CREATE TABLE #TempLluvia (
-        time VARCHAR(20),
-        temperatura FLOAT,
-        lluvia FLOAT,
-        humedad INT,
-        viento FLOAT
-    )
+        FechaHora VARCHAR(50),
+        Temperatura VARCHAR(20),
+        Lluvia VARCHAR(20),
+        Humedad VARCHAR(20),
+        Viento VARCHAR(20)
+    );
 
-    -- Importar desde archivo CSV ( fila 3)
-	DECLARE @sql NVARCHAR(MAX)
-    SET @sql = '
-    BULK INSERT #TempLluvia
-    FROM ''' + @RutaArchivo + '''
-    WITH (
-        FORMAT = ''CSV'',
-        FIRSTROW = 5,
-        FIELDTERMINATOR = '','',
-        ROWTERMINATOR = ''\n'',
-        CODEPAGE = ''1252''
-    );'
+    BEGIN TRY
+        -- === PRIMER ARCHIVO ===
+        DECLARE @sql NVARCHAR(MAX) =
+        N'
+        BULK INSERT #TempLluvia
+        FROM ''' + @RutaArchivo + '''
+        WITH (
+            FIRSTROW = 2,
+            FIELDTERMINATOR = '','',
+            ROWTERMINATOR  = ''0x0a'',
+            CODEPAGE = ''65001'',
+            TABLOCK
+        );';
+        EXEC sp_executesql @sql;
 
-	EXEC sp_executesql @sql
+        
+        INSERT INTO dbsl.Lluvia (Fecha, Hora, Lluvia)
+        SELECT
+            TRY_CAST(LEFT(FechaHora,10) AS date),
+            TRY_CAST(SUBSTRING(FechaHora,12,5)+':00' AS time),
+            TRY_CAST(Lluvia AS float)
+        FROM #TempLluvia T
+        WHERE Lluvia IS NOT NULL
+          AND NOT EXISTS (-- Evito duplicados porque ambos archivos csv tienen fechas iguales desde el 1-1-2025 
+              SELECT 1
+              FROM dbsl.Lluvia L
+              WHERE L.Fecha = TRY_CAST(LEFT(T.FechaHora,10) AS date)
+                AND  L.Hora  = TRY_CAST(SUBSTRING(T.FechaHora,12,5)+':00' AS time)
+          );
 
-    -- Insertar los datos en la tabla Lluvia
-    INSERT INTO dbsl.Lluvia (fecha, hora, Precipitacion)
-    SELECT
-        CAST(LEFT(time, 10) AS DATE),
-        CAST(SUBSTRING(time, 12, 5) + ':00' AS TIME),
-        Precipitacion
-    FROM #TempLluvia
+        -- Limpiar para segundo archivo
+        DELETE FROM #TempLluvia;
 
+        --------------------------------------------------SEGUNDO ARCHIVO ------------------------
+        IF @RutaArchivo2 IS NOT NULL
+        BEGIN
+            SET @sql =
+            N'
+            BULK INSERT #TempLluvia
+            FROM ''' + @RutaArchivo2 + '''
+            WITH (
+                FIRSTROW = 2,
+                FIELDTERMINATOR = '','',
+                ROWTERMINATOR  = ''0x0a'',
+                CODEPAGE = ''65001'',
+                TABLOCK
+            );';
+            EXEC sp_executesql @sql;
 
-	UPDATE PV
-	SET PV.Lluvia = V.llovio
-	FROM dbsl.PiletaVerano PV
-	JOIN dbsl.VLluviaDia V ON PV.Fecha = V.fecha
+            -- Insertar sin duplicar
+            INSERT INTO dbsl.Lluvia (Fecha, Hora, Lluvia)
+            SELECT
+                TRY_CAST(LEFT(FechaHora,10) AS date),
+                TRY_CAST(SUBSTRING(FechaHora,12,5)+':00' AS time),
+                TRY_CAST(Lluvia AS float)
+            FROM #TempLluvia T
+            WHERE Lluvia IS NOT NULL
+              AND NOT EXISTS (-- Evito duplicados porque ambos archivos csv tienen fechas iguales desde el 1-1-2025 
+                  SELECT 1
+                  FROM dbsl.Lluvia L
+                  WHERE L.Fecha = TRY_CAST(LEFT(T.FechaHora,10) AS date)
+                    AND  L.Hora  = TRY_CAST(SUBSTRING(T.FechaHora,12,5)+':00' AS time)
+              );
+        END
 
-	 DROP TABLE #TempLluvia
+     ------------------------ ACTUALIZAR PiletaVerano-------
+        UPDATE PV
+        SET PV.Lluvia =
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM dbsl.Lluvia L
+                    WHERE L.Fecha = PV.Fecha
+                      AND L.Hora BETWEEN '08:00:00' AND '20:00:00'
+                      AND L.Lluvia > 0
+                )
+                THEN 1
+                ELSE 0
+            END
+        FROM dbsl.PiletaVerano PV;
+
+        PRINT 'Importación y actualización de lluvia completadas correctamente.';
+    END TRY
+    BEGIN CATCH
+        PRINT 'Ocurrió un error durante el proceso de importación.';
+        PRINT ERROR_MESSAGE();
+    END CATCH
 END
+GO
 
-EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
---EXEC dbsl.ActualizarLluviaDesdeArchivo 'C:\Users\leand\Desktop\TPI-2025-1C\open-meteo-buenosaires_2025.csv'
+
+--EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
+
+EXEC dbsl.spImportarLluvia
+    'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2024.csv',
+    'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2025.csv';
 
 ------------------------------------CARGAR PiletaVerano------------------------------------------------------------------------------------------------
 
