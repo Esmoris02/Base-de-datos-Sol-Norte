@@ -5,7 +5,7 @@
 ------------------------------------------------------------------------------------------------------------------------------------------------
 ----																																		----
 ----										En este mismo query se encuentran los scripts pertenecientes									----
-----										A la entrega 5 y abajo de todo, los de la entrega 6.											----
+----										A la entrega 5 										----
 ----										Para importar los archivos, separamos el excel .xlsx en distintos .csv							----
 ----																																		----
 ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -13,7 +13,7 @@
 USE ClubSolNorte
 go
 
---Para importar los socios del archivo "Responsables_de_pago.csv" Cree el siguiente SP
+--Para importar los socios del archivo "Responsables_de_pago.csv" Creeamos el siguiente SP
 CREATE OR ALTER PROCEDURE dbsl.spImportarSocios
     @RutaArchivo NVARCHAR(300)
 AS
@@ -107,6 +107,7 @@ GO
 
 
 EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
 
@@ -115,7 +116,8 @@ SELECT * FROM dbsl.Socio
 SELECT * FROM dbsl.GrupoFamiliar
 DELETE FROM dbsl.Socio
 
---Para importar los socios del archivo "Grupo_familiar.csv" Cree el siguiente SP
+--Para importar los socios del archivo "Grupo_familiar.csv" Creamos el siguiente SP
+
 CREATE OR ALTER PROCEDURE dbsl.spImportarGrupoFamiliar
     @RutaArchivo NVARCHAR(300)
 AS
@@ -203,6 +205,7 @@ BEGIN
 END
 
 EXEC dbsl.spImportarGrupoFamiliar 'La ruta de su archivo Responsables_de_pago.csv'
+--EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
 
@@ -472,7 +475,7 @@ EXEC dbsl.spImportarLluvia
     'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2025.csv';
 
 EXEC dbsl.spImportarLluvia
-    'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv',
+    'C:\ARCHIVOS\open-meteo-buenosaires_2024.csv',
     'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv';
 
 EXEC dbsl.spImportarLluvia
@@ -482,6 +485,8 @@ EXEC dbsl.spImportarLluvia
 
 
 ------------------------------------CARGAR Presentismo------------------------------------------------------------------------------------------------
+--Importamos el archivo Presentismo_actividades y luego actualizamos el ID Actividad en la misma tabla relacionandola con la tabla
+--actividades
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarPresentismo
     @RutaArchivo NVARCHAR(300)
@@ -558,6 +563,11 @@ EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
 
 SELECT * FROM dbsl.PresentismoClases
 
+-----------------------------------------------CategoriaSocio------------------------------------------------------------
+--Este procedure actualiza el campo ID CATEGORIA de la Tabla Socio, debido a que dentro de la Tabla Socio, los que venian
+--del archivo Responsables no tenian fecha de nac, fueron tomados como mayores.
+
+
 CREATE OR ALTER PROCEDURE dbsl.spActualizaCategoriaSocio
 AS
 BEGIN
@@ -580,11 +590,11 @@ BEGIN
 END
 EXEC dbsl.spActualizaCategoriaSocio
 
-SELECT * from dbsl.PresentismoClases
-SELECT * FROM dbsl.Actividad
-SELECT * from dbsl.Socio
-SELECT * FROM dbsl.Clase
-SELECT * FROM dbsl.Inscripcion
+
+
+------------------------------------------IMPORTAR CLASES-------------------------------------------------------------------------
+--Importamos el archivo Clases_Club, es un archivo propio que fue generado con la idea de poder testear todos los reportes
+--y funcionalidades.
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarClases
     @RutaArchivo NVARCHAR(300)
@@ -643,31 +653,4 @@ END
 EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
 --EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
 
-SELECT * FROM dbsl.Cobro  
-SELECT * FROM dbsl.Clase
-SELECT * FROM dbsl.Colonia 
-SELECT * FROM dbsl.PresentismoClases
-SELECT * FROM dbsl.Actividad
-SELECT * FROM dbsl.Socio
-SELECT * FROM dbsl.CategoriaSocio
-SELECT * FROM dbsl.Inscripcion  
-SELECT * FROM dbsl.Invitado
-drop table dbsl.Clase
 
-------REPORTE 3 NO TOCAR
-SELECT 
-    CS.NombreCategoria,
-    P.NombreActividad,
-    COUNT(DISTINCT P.NroSocio) AS CantidadSociosConFaltas,
-    COUNT(*) AS TotalInasistencias
-FROM dbsl.PresentismoClases P
-JOIN dbsl.Socio S ON P.NroSocio = S.NroSocio
-JOIN dbsl.CategoriaSocio CS ON S.idCategoria = CS.idCategoria
-WHERE P.Asistencia = 'A'
-GROUP BY 
-    CS.NombreCategoria,
-    P.NombreActividad
-ORDER BY 
-    TotalInasistencias DESC;
-
-------REPORTE 3 NO TOCAR
