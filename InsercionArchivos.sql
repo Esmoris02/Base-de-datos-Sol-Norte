@@ -1,12 +1,19 @@
 --Importar datos desde un archivo
 --Primero creamos una tabla temporal para poder bajar todos los datos y luego almacenarlos en nuestras tablas permanentes
 --teniendo en cuenta los duplicados, etc
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+----																																		----
+----										En este mismo query se encuentran los scripts pertenecientes									----
+----										A la entrega 5 y abajo de todo, los de la entrega 6.											----
+----										Para importar los archivos, separamos el excel .xlsx en distintos .csv							----
+----																																		----
+------------------------------------------------------------------------------------------------------------------------------------------------
+
 USE ClubSolNorte
 go
 
-
-DROP TABLE dbsl.TemporalSocio
-
+--Para importar los socios del archivo "Responsables_de_pago.csv" Cree el siguiente SP
 CREATE OR ALTER PROCEDURE dbsl.spImportarSocios
     @RutaArchivo NVARCHAR(300)
 AS
@@ -96,17 +103,19 @@ BEGIN
 
 	DROP TABLE #TemporalSocio
 END
+GO
 
-EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
+
+EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
 
-
+--Visualizar los resultados
 SELECT * FROM dbsl.Socio
 SELECT * FROM dbsl.GrupoFamiliar
 DELETE FROM dbsl.Socio
 
-
+--Para importar los socios del archivo "Grupo_familiar.csv" Cree el siguiente SP
 CREATE OR ALTER PROCEDURE dbsl.spImportarGrupoFamiliar
     @RutaArchivo NVARCHAR(300)
 AS
@@ -146,7 +155,7 @@ BEGIN
 
     EXEC sp_executesql @sql
 
-    --Insertar socios (evitar duplicados)
+    --Insertar socios evitando duplicados
     INSERT INTO dbsl.Socio (
 		NroSocio,
 		Nombre,
@@ -193,13 +202,17 @@ BEGIN
 	DROP TABLE #TemporalGrupoFamiliar
 END
 
-EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
+EXEC dbsl.spImportarGrupoFamiliar 'La ruta de su archivo Responsables_de_pago.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
+
+--Visualizar resultado
 select * from dbsl.Socio
 
 ----------------------------Carga Categoria de socio-----------------------------------------------------------------------------------------------
 
+--Como las tarifas estaban colocadas de forma desordenada dentro de un csv y eran pocos registros, decidimos agregarlas manualmente a traves de un SP
+--Si queremos agregar un nuevo registro, el ultimo parametro debe ser "c" y si queremos editar alguna tarifa, el ultimo parametro debe ser "e".
 CREATE OR ALTER PROCEDURE dbsl.CargarEditarCategoriaSocio(@NombreCategoria varchar(50), @EdadDesde INT,@EdadHasta INT, @Costo INT,@VigenteHasta VARCHAR(15),@Accion CHAR)
 AS
 BEGIN
@@ -235,10 +248,13 @@ SELECT * FROM dbsl.CategoriaSocio
 
 ----------------------------Carga Actividades-----------------------------------------------------------------------------------------------
 
-
+--Como las tarifas estaban colocadas de forma desordenada dentro de un csv y eran pocos registros, decidimos agregarlas manualmente a traves de un SP
+--Si queremos agregar un nuevo registro, el ultimo parametro debe ser "c" y si queremos editar alguna tarifa, el ultimo parametro debe ser "e".
 CREATE OR ALTER PROCEDURE dbsl.CargarEditarActividad (@Estado VARCHAR(15),@nombreActividad VARCHAR(50),@costo INT,@accion CHAR)
 AS
 BEGIN
+
+	SET NOCOUNT ON;
 	
 	if @accion = 'c'
 		BEGIN
@@ -271,12 +287,75 @@ EXEC dbsl.CargarEditarActividad '31/05/2025','Natación', 45000,'c'
 EXEC dbsl.CargarEditarActividad '31/05/2025','Ajedrez', 2000,'c'
 
 SELECT * FROM dbsl.Actividad
-SELECT * FROM dbsl.PresentismoClases
 
----------------------------Cargar Lluvia-----------------------------------------------------------------------------------
-SELECT*FROM dbsl.Lluvia
-DELETE FROM dbsl.Lluvia
-SELECT*FROM dbsl.PiletaVerano
+
+------------------------------------CARGAR PiletaVerano------------------------------------------------------------------------------------------------
+--Cargamos cuales son las tarifas desde el inicio de la temporada de verano hasta su fin. 
+--Pusimos todas y cada una de las fechas porque aprovechamos esta tabla para indicar tambien si
+--Hubo lluvia para x fecha o no.
+
+CREATE OR ALTER PROCEDURE dbsl.spCargarPiletaVerano
+AS
+BEGIN
+    SET NOCOUNT ON
+
+	CREATE TABLE #TemporalTarifaPileta (
+    TipoDePase VARCHAR(20),
+    VigenteHasta DATE,
+    CostoSocioAdulto INT,
+    CostoInvitadoAdulto INT,
+    CostoSocioMenor INT,
+    CostoInvitadoMenor INT
+	)
+
+	INSERT INTO #TemporalTarifaPileta
+	VALUES
+	('Día', '2025-02-28', 25000, 30000, 15000, 2000),
+	('Temporada', '2025-02-28', 2000000, 0, 1200000, 0),
+	('Mes', '2025-02-28', 625000, 0, 375000, 0)
+
+    DECLARE 
+        @fecha DATE = '2024-12-01',
+        @fin DATE = '2025-02-28';
+
+    WHILE @fecha <= @fin
+    BEGIN
+        -- Día-------------------------------------
+        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
+        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
+        FROM #TemporalTarifaPileta
+        WHERE TipoDePase = 'Día';
+
+        -- Temporada--------------------------
+        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
+        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
+        FROM #TemporalTarifaPileta
+        WHERE TipoDePase = 'Temporada';
+
+        -- Mes------------------------
+        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
+        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
+        FROM #TemporalTarifaPileta
+        WHERE TipoDePase = 'Mes';
+
+        SET @fecha = DATEADD(DAY, 1, @fecha);
+    END
+
+    PRINT 'Carga de PiletaVerano completada correctamente.'
+	
+END
+
+EXEC dbsl.spCargarPiletaVerano
+
+SELECT * from dbsl.PiletaVerano
+
+---------------------------Cargar Archivos de clima 2024 y 2025-----------------------------------------------------------------------------------
+
+--Importamos ambos archivos de lluvia al mismo tiempo, por eso, el segundo parametro puede ser nulo por si en algun futuro
+--se quisiera importar uno solo.
+--Tuivimos que eliminar las 3 primeras filas de los archivos porque tenian 6 columnas mientras que a partir de la fila 4, las
+--filas eran de 5 columnas. Aunque haciamos el bulk insert con "FIRSTROW=5" para que saltee las filas que molestaban, siempre 
+--habia un error "Cannot obtain the required interface ("IID_IColumnsInfo") from OLE DB provider "BULK""
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarLluvia
     @RutaArchivo NVARCHAR(300),
@@ -285,7 +364,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- 1. Crear tabla temporal real
     CREATE TABLE #TempLluvia (
         FechaHora VARCHAR(50),
         Temperatura VARCHAR(20),
@@ -295,7 +373,7 @@ BEGIN
     );
 
     BEGIN TRY
-        -- === PRIMER ARCHIVO ===
+        --Primer archivo importado
         DECLARE @sql NVARCHAR(MAX) =
         N'
         BULK INSERT #TempLluvia
@@ -358,8 +436,10 @@ BEGIN
                     AND  L.Hora  = TRY_CAST(SUBSTRING(T.FechaHora,12,5)+':00' AS time)
               );
         END
-
+	
      ------------------------ ACTUALIZAR PiletaVerano-------
+	 --Atraves de la informacion recientemente importada de los csv, podemos actuzalizar que dias de la tabla "PiletaVerano" fueron de lluvia
+	 --Para mas adelante poder trabajar con los reembolsos.
         UPDATE PV
         SET PV.Lluvia =
             CASE
@@ -367,7 +447,7 @@ BEGIN
                     SELECT 1
                     FROM dbsl.Lluvia L
                     WHERE L.Fecha = PV.Fecha
-                      AND L.Hora BETWEEN '08:00:00' AND '20:00:00'
+                      AND L.Hora BETWEEN '08:00:00' AND '20:00:00' --Solo nos importa si llovió en horario operativo del club.
                       AND L.Lluvia > 0
                 )
                 THEN 1
@@ -391,90 +471,17 @@ EXEC dbsl.spImportarLluvia
     'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2024.csv',
     'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2025.csv';
 
-------------------------------------CARGAR PiletaVerano------------------------------------------------------------------------------------------------
+EXEC dbsl.spImportarLluvia
+    'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv',
+    'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv';
 
-CREATE PROCEDURE dbsl.CrearTablaTemporalTarifaPileta
-AS
-BEGIN
-	CREATE TABLE #TemporalTarifaPileta (
-    TipoDePase VARCHAR(20),
-    VigenteHasta DATE,
-    CostoSocioAdulto INT,
-    CostoInvitadoAdulto INT,
-    CostoSocioMenor INT,
-    CostoInvitadoMenor INT
-	)
-
-	INSERT INTO #TemporalTarifaPileta
-	VALUES
-	('Día', '2025-02-28', 25000, 30000, 15000, 2000),
-	('Temporada', '2025-02-28', 2000000, 0, 1200000, 0),
-	('Mes', '2025-02-28', 625000, 0, 375000, 0)
-
-	DROP TABLE #TemporalTarifaPileta
-
-END
+EXEC dbsl.spImportarLluvia
+    'Coloque la ruta de su archivo 1',
+    'Coloque la ruta de su archivo 2';
 
 
 
-CREATE OR ALTER PROCEDURE dbsl.spCargarPiletaVerano
-AS
-BEGIN
-    SET NOCOUNT ON
-
-	CREATE TABLE #TemporalTarifaPileta (
-    TipoDePase VARCHAR(20),
-    VigenteHasta DATE,
-    CostoSocioAdulto INT,
-    CostoInvitadoAdulto INT,
-    CostoSocioMenor INT,
-    CostoInvitadoMenor INT
-	)
-
-	INSERT INTO #TemporalTarifaPileta
-	VALUES
-	('Día', '2025-02-28', 25000, 30000, 15000, 2000),
-	('Temporada', '2025-02-28', 2000000, 0, 1200000, 0),
-	('Mes', '2025-02-28', 625000, 0, 375000, 0)
-
-    DECLARE 
-        @fecha DATE = '2024-12-01',
-        @fin DATE = '2025-02-28';
-
-    WHILE @fecha <= @fin
-    BEGIN
-        -- Día-------------------------------------
-        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
-        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
-        FROM #TemporalTarifaPileta
-        WHERE TipoDePase = 'Día';
-
-        -- Temporada--------------------------
-        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
-        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
-        FROM #TemporalTarifaPileta
-        WHERE TipoDePase = 'Temporada';
-
-        -- Mes------------------------
-        INSERT INTO dbsl.PiletaVerano(Fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor)
-        SELECT @fecha, TipoDePase, CostoSocioAdulto, CostoInvitadoAdulto, CostoSocioMenor, CostoInvitadoMenor
-        FROM #TemporalTarifaPileta
-        WHERE TipoDePase = 'Mes';
-
-        SET @fecha = DATEADD(DAY, 1, @fecha);
-    END
-
-    PRINT 'Carga de PiletaVerano completada correctamente.'
-
-	
-END
-
---Ejecutar los dos al mismo tiempo
---EXEC dbsl.CrearTablaTemporalTarifaPileta
-EXEC dbsl.spCargarPiletaVerano
-
-SELECT * from dbsl.PiletaVerano
-
+------------------------------------CARGAR Presentismo------------------------------------------------------------------------------------------------
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarPresentismo
     @RutaArchivo NVARCHAR(300)
