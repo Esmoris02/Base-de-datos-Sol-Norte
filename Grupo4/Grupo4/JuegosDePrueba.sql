@@ -53,7 +53,7 @@ EXEC dbsl.InsertarSocio
 EXEC dbsl.InsertarSocio
     1003, 'Activo', 'Lucía', 'Pérez', '40123456', '1990-03-18',
     '1123456789', '1109876543', 'lucia.perez@gmail.com', 'Galeno', '1122334455',
-    3, 3;
+    3, NULL;
 -- Error esperado "Nro de socio Invalido" (no puede ser nulo)
 EXEC dbsl.InsertarSocio
     -1, 'Activo', 'Lucía', 'Pérez', '40123456', '1990-03-18',
@@ -179,7 +179,7 @@ EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 2, @FechaIn = '2025-1
 EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idReserva = 1, @FechaIn = '2025-12-22';
 -- Colonia
 EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
-
+-- Pileta
 EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
 
 --select * from dbsl.Inscripcion

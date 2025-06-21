@@ -618,8 +618,7 @@ END;
 GO
 
  --Detalle Factura-------------------------------------------------
- --Nos encontramos en la duda (Igual que en dos tablas arriba) de si debiamos crear un procedure para el llenado de esta tabla debido a que sus
- --datos son calculados en base a datos de otras tablas.
+
 IF OBJECT_ID('dbsl.insertarDetalleFactura','P') IS NOT NULL
 DROP PROCEDURE dbsl.insertarDetalleFactura
 GO
