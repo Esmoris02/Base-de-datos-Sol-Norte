@@ -186,23 +186,20 @@ EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-
 
 --------------INSERTAR INVITADO------------------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.insertarInvitado 'Matías', 'Fernández', '2025-06-01', 1, 1
+EXEC dbsl.insertarInvitado 'Matías', 'Fernández', '2019-06-01';
 
 -- Error esperado: 'Ingrese nuevamente los datos para nombre y apellido'
-EXEC dbsl.insertarInvitado '', 'Rodríguez', '2025-06-01', 1, 1
+EXEC dbsl.insertarInvitado '', 'Rodríguez', '1999-06-01';
 
 -- Error esperado: 'La fecha no puede ser nula'
-EXEC dbsl.insertarInvitado 'Carla', 'López', NULL, 1, 1
+EXEC dbsl.insertarInvitado 'Carla', 'López', NULL;
 
--- Error esperado: 'La fecha no puede ser menor a la actual'
-EXEC dbsl.insertarInvitado 'Diego', 'Sosa', '2024-12-01', 1, 1
+-- Error esperado: 'La fecha no puede ser mayor a la actual'
+EXEC dbsl.insertarInvitado 'Diego', 'Sosa', '2027-12-01';
 
--- Error esperado: 'La inscripcion no existe.'
-EXEC dbsl.insertarInvitado 'Laura', 'Gómez', '2025-06-01', 999, 1
-
--- Error esperado: 'La fecha de pileta no existe.'
-EXEC dbsl.insertarInvitado 'Tomás', 'Díaz', '2025-06-01', 1, 999
-
+--select * from dbsl.Invitado
+--------------------INSERTAR INSCRIPCION INVITADO --------------
+EXEC dbsl.InsertarInscripcionInvitado @idInvitado = 1, @idPileta = 1, @NroSocio = 1001;
 ----------------INSERTAR METODO DE PAGO------------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
@@ -224,6 +221,8 @@ SELECT * FROM dbsl.DetalleFactura;
 
 --DELETE FROM dbsl.DetalleFactura;
 --DELETE FROM dbsl.Factura;
+------------------GENERAR FACTURA INVITADO---------------
+EXEC dbsl.GenerarFacturaInvitado @idInscripcion = 6;
 ----------------INSERTAR COBRO----------------------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=1;
@@ -231,16 +230,13 @@ EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=1;
 EXEC dbsl.insertarCobro  @idFactura=3,@idMetodoPago=9;
 
 --select * from dbsl.Cobro
-
-------Insertar Cobro ------
+--delete from dbsl.Cobro
+------Insertar Reembolso ------
 -- Reembolso directo al mismo medio de pago del cobro
 EXEC dbsl.InsertarReembolso @idCobro = 1,@NroSocio=1001,@Porcentaje = 60,@Motivo = 'Reintegro por lluvia',@PagoACuenta = 0;
-
---select * from dbsl.Cobro
---delete from dbsl.Cobro
 -- Reembolso como saldo a favor
 EXEC dbsl.InsertarReembolso @idCobro = 1,@NroSocio=1001,@Porcentaje = 100,@Motivo = 'Suspensión por fuerza mayor',@PagoACuenta = 1;
-select * from dbsl.Reembolso
+--select * from dbsl.Reembolso
 --delete from dbsl.Reembolso
 
 

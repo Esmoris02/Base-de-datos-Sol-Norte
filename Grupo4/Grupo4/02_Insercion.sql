@@ -1,4 +1,4 @@
-
+Ôªø
 use ClubSolNorte
 go
 --Categoria socio
@@ -118,26 +118,26 @@ BEGIN
  
 	IF (@FechaNac IS NULL OR @FechaNac >= GETDATE() OR @FechaNac < '1900-01-01' OR @FechaNac > GETDATE())
 	BEGIN
-		RAISERROR('La fecha no puede ser nula, mayor a la actual o menor al aÒo 1900.', 16, 1)
+		RAISERROR('La fecha no puede ser nula, mayor a la actual o menor al a√±o 1900.', 16, 1)
 		RETURN
 	END
  
 	IF (@Email NOT LIKE '%@%.%' OR LEN(@Email) < 5)
 	BEGIN
-		RAISERROR('El correo electrÛnico ingresado no es v·lido.', 16, 1)
+		RAISERROR('El correo electr√≥nico ingresado no es v√°lido.', 16, 1)
 		RETURN
 	END
  
  
 	IF EXISTS (SELECT 1 FROM dbsl.Socio WHERE NroSocio = @NroSocio)
 	BEGIN
-		RAISERROR('Ya existe un socio con ese n˙mero.', 16, 1)
+		RAISERROR('Ya existe un socio con ese n√∫mero.', 16, 1)
 		RETURN
 	END
  
 	IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE idCategoria = @idCategoria)
 	BEGIN
-		RAISERROR('CategorÌa de socio no v·lida.', 16, 1)
+		RAISERROR('Categor√≠a de socio no v√°lida.', 16, 1)
 		RETURN
 	END
 
@@ -150,7 +150,7 @@ BEGIN
     BEGIN
         IF NOT EXISTS (SELECT 1 FROM dbsl.GrupoFamiliar WHERE idGrupo = @idGrupoFamiliar)
         BEGIN
-            RAISERROR('El socio es menor de edad y debe tener un grupo familiar v·lido.', 16, 1)
+            RAISERROR('El socio es menor de edad y debe tener un grupo familiar v√°lido.', 16, 1)
             RETURN
         END
     END
@@ -164,7 +164,7 @@ BEGIN
         END
     END
 
-    -- InserciÛn final
+    -- Inserci√≥n final
     INSERT INTO dbsl.Socio (NroSocio, Estado, Nombre, Apellido, Dni, FechaNac,Telefono, TelefonoEmergencia, Email,ObraSocial, NumeroObraSocial, idCategoria, idGrupoFamiliar, SaldoFavor)
     VALUES (@NroSocio, @Estado, @Nombre, @Apellido, @Dni, @FechaNac,@Telefono, @TelefonoEmergencia, @Email,@ObraSocial, @NumeroObraSocial, @idCategoria, @idGrupoFamiliar,0)
 END
@@ -200,13 +200,13 @@ BEGIN
  
 	IF @Rol NOT IN ('administrador','profesor','socio')
     BEGIN
-        RAISERROR('El rol ingresado no es v·lido. Debe ser: "administrador","profesor" o "socio"', 16, 1)
+        RAISERROR('El rol ingresado no es v√°lido. Debe ser: "administrador","profesor" o "socio"', 16, 1)
         RETURN
     END
  
 	IF (@FecVig IS NULL OR @FecVig >= GETDATE() OR @FecVig < '1900-01-01' OR @FecVig > GETDATE())
 	BEGIN
-		RAISERROR('La fecha no puede ser nula, mayor a la actual o menor al aÒo 1900.', 16, 1)
+		RAISERROR('La fecha no puede ser nula, mayor a la actual o menor al a√±o 1900.', 16, 1)
 		RETURN
 	END
  
@@ -234,13 +234,13 @@ AS
 BEGIN
     IF LEN(@NombreActividad) <= 0
     BEGIN
-        RAISERROR('El nombre de la actividad no puede estar vacÌo o ser muy corto.', 16, 1);
+        RAISERROR('El nombre de la actividad no puede estar vac√≠o o ser muy corto.', 16, 1);
         RETURN;
     END
  
     IF @Costo IS NULL OR @Costo < 0
     BEGIN
-        RAISERROR('El costo de la actividad no es v·lido.', 16, 1);
+        RAISERROR('El costo de la actividad no es v√°lido.', 16, 1);
         RETURN;
     END
  
@@ -305,7 +305,7 @@ BEGIN
         WHERE idActividad = @idActividad AND Dia = @Dia AND Horario = @Horario
     )
     BEGIN
-        RAISERROR('Ya existe una clase para esa actividad, dÌa y horario.', 16, 1)
+        RAISERROR('Ya existe una clase para esa actividad, d√≠a y horario.', 16, 1)
         RETURN
     END
  
@@ -332,16 +332,16 @@ CREATE PROCEDURE dbsl.insertarPiletaVerano
 AS
 BEGIN
     SET NOCOUNT ON;
-	 -- ValidaciÛn de tipo de pase
-    IF @TipoDePase NOT IN ('Pase del DÌa', 'Pase del Mes', 'Pase de Temporada')
+	 -- Validaci√≥n de tipo de pase
+    IF @TipoDePase NOT IN ('Pase del D√≠a', 'Pase del Mes', 'Pase de Temporada')
     BEGIN
-        RAISERROR('El tipo de pase debe ser: Pase del DÌa, Pase del Mes o Pase de Temporada.', 16, 1)
+        RAISERROR('El tipo de pase debe ser: Pase del D√≠a, Pase del Mes o Pase de Temporada.', 16, 1)
         RETURN
     END
     -- Validacion de la fecha
     IF @Fecha IS NULL OR @Fecha < CAST(GETDATE() AS DATE)
     BEGIN
-        RAISERROR('La fecha debe ser v·lida y no menor a hoy.', 16, 1)
+        RAISERROR('La fecha debe ser v√°lida y no menor a hoy.', 16, 1)
         RETURN
     END
 
@@ -368,9 +368,7 @@ GO
 CREATE PROCEDURE dbsl.insertarInvitado
 	@Nombre VARCHAR(50),
 	@Apellido VARCHAR(50),
-	@FechaInvitado DATE,
-	@idInscripcion INT,
-	@idPileta INT
+	@FechaNacimiento DATE
 AS
 BEGIN
 
@@ -380,31 +378,22 @@ BEGIN
 			RETURN
 		END
 
-	IF @FechaInvitado IS NULL 
+	IF @FechaNacimiento IS NULL 
 		BEGIN
 			RAISERROR('La fecha no puede ser nula', 16, 1)
 			RETURN
 		END
 
-	IF @FechaInvitado < GETDATE() 
+	IF @FechaNacimiento > GETDATE() 
 		BEGIN
-			RAISERROR('La fecha no puede ser menor a la actual', 16, 1)
+			RAISERROR('La fecha no puede ser mayor a la actual', 16, 1)
 			RETURN
 		END
 
-	IF NOT EXISTS (SELECT 1 FROM dbsl.Inscripcion WHERE idInscripcion = @idInscripcion)
-		BEGIN
-			RAISERROR('La inscripcion no existe.', 16, 1)
-			RETURN
-		END
-	IF NOT EXISTS (SELECT 1 FROM dbsl.PiletaVerano WHERE idPileta = @idPileta)
-		BEGIN
-			RAISERROR('La fecha de pileta no existe.', 16, 1)
-			RETURN
-		END
+	
  
-	INSERT INTO dbsl.Invitado (Nombre, Apellido, FechaInvitado, idInscripcion, idPileta)
-	VALUES (@Nombre, @Apellido, @FechaInvitado, @idInscripcion, @idPileta)
+	INSERT INTO dbsl.Invitado (Nombre, Apellido, FechaNacimiento)
+	VALUES (@Nombre, @Apellido, @FechaNacimiento)
 END
 GO
 
@@ -467,7 +456,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validaciones b·sicas
+    -- Validaciones b√°sicas
     IF @Porcentaje <= 0 OR @Porcentaje > 100
     BEGIN
         RAISERROR('El porcentaje debe estar entre 0 y 100.', 16, 1);
@@ -490,7 +479,7 @@ BEGIN
             @MontoReembolso INT,
             @MetodoPago VARCHAR(50);
 
-    -- Obtener monto y mÈtodo de pago desde el cobro
+    -- Obtener monto y m√©todo de pago desde el cobro
     SELECT 
         @MontoCobrado = C.Monto,
         @MetodoPago = MP.Descripcion
@@ -558,10 +547,10 @@ BEGIN
         RETURN;
     END
 
-    -- Validar existencia del mÈtodo de pago
+    -- Validar existencia del m√©todo de pago
     IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idMetodoPago = @idMetodoPago)
     BEGIN
-        RAISERROR('El mÈtodo de pago especificado no existe.', 16, 1);
+        RAISERROR('El m√©todo de pago especificado no existe.', 16, 1);
         RETURN;
     END
 
@@ -582,7 +571,7 @@ BEGIN
         RETURN;
     END
 
-    -- Aplicar recargo si se pasÛ del segundo vencimiento
+    -- Aplicar recargo si se pas√≥ del segundo vencimiento
     IF @fechaActual > @fechaSegundoVencimiento
     BEGIN
         DECLARE @recargo INT;
@@ -591,7 +580,7 @@ BEGIN
         WHERE idFactura = @idFactura;
 
         INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
-        VALUES ('Recargo', '10% por pago fuera de tÈrmino', @recargo, @idFactura);
+        VALUES ('Recargo', '10% por pago fuera de t√©rmino', @recargo, @idFactura);
 
         -- Actualizar total
         UPDATE dbsl.Factura
@@ -638,13 +627,13 @@ BEGIN
     -- Validar campos obligatorios
     IF (@TipoItem IS NULL OR TRIM(@TipoItem) = '')
     BEGIN
-        RAISERROR('El tipo de Ìtem no puede ser nulo ni vacÌo.', 16, 1)
+        RAISERROR('El tipo de √≠tem no puede ser nulo ni vac√≠o.', 16, 1)
         RETURN
     END
 
     IF (@Descripcion IS NULL OR TRIM(@Descripcion) = '')
     BEGIN
-        RAISERROR('La descripciÛn no puede ser nula ni vacÌa.', 16, 1)
+        RAISERROR('La descripci√≥n no puede ser nula ni vac√≠a.', 16, 1)
         RETURN
     END
 
@@ -722,7 +711,7 @@ BEGIN
         RETURN;
     END
 
-    -- Validar que no haya superposiciÛn con otras reservas del mismo SUM
+    -- Validar que no haya superposici√≥n con otras reservas del mismo SUM
     IF EXISTS (
         SELECT 1
         FROM dbsl.Reserva
@@ -733,7 +722,7 @@ BEGIN
              )
     )
     BEGIN
-        RAISERROR('El SUM ya est· reservado en ese rango horario.', 16, 1)
+        RAISERROR('El SUM ya est√° reservado en ese rango horario.', 16, 1)
         RETURN;
     END
 
@@ -758,7 +747,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validaciones b·sicas
+    -- Validaciones b√°sicas
     IF LEN(@Nombre) < 3
     BEGIN
         RAISERROR('El nombre de la colonia debe tener al menos 3 caracteres.', 16, 1);
@@ -783,7 +772,7 @@ BEGIN
         RETURN;
     END
 
-    -- InserciÛn
+    -- Inserci√≥n
     INSERT INTO dbsl.Colonia (Nombre, Descripcion, Costo, fechaInicio, fechaFin)
     VALUES (@Nombre, @Descripcion, @Costo, @fechaInicio, @fechaFin);
 END
@@ -848,18 +837,18 @@ BEGIN
         RETURN;
     END
 
-    -- Insertar inscripciÛn
+    -- Insertar inscripci√≥n
     INSERT INTO dbsl.Inscripcion (NroSocio, idClase, idReserva, idPileta,idColonia, FechaIn)
     VALUES (@NroSocio, @idClase, @idReserva, @idPileta,@idColonia, @FechaIn);
 END
 GO
 
 --Generacion de Factura--------------------
---Nota: Al generar una factura, se inclulle en el detalle factura que estan en inscripciÛn. A excepciÛn de las clases de las
---actividades, solo se incluir· los items en la primera factura generada, ej: si yo genero una reserva para el sum, se registrar· 
---en la primera factura generada de ese socio despuÈs de la inscripciÛn. Si se genera otra, esta no aparecer·. Si quiero otra reserva, 
---deverÈ realizar otra inscripciÛn. Las actividades se consideran como una "subscripciÛn mensual", y se incluiran enncada factura generada
--- mientras exista esa inscripciÛn
+--Nota: Al generar una factura, se inclulle en el detalle factura que estan en inscripci√≥n. A excepci√≥n de las clases de las
+--actividades, solo se incluir√° los items en la primera factura generada, ej: si yo genero una reserva para el sum, se registrar√° 
+--en la primera factura generada de ese socio despu√©s de la inscripci√≥n. Si se genera otra, esta no aparecer√°. Si quiero otra reserva, 
+--dever√© realizar otra inscripci√≥n. Las actividades se consideran como una "subscripci√≥n mensual", y se incluiran enncada factura generada
+-- mientras exista esa inscripci√≥n
 IF OBJECT_ID('dbsl.GenerarFactura','P') IS NOT NULL
 DROP PROCEDURE dbsl.GenerarFactura
 GO
@@ -872,13 +861,13 @@ BEGIN
 
     IF (@idSocio IS NULL OR @idSocio <= 0)
     BEGIN
-        RAISERROR('El ID de socio debe ser un n˙mero positivo.', 16, 1)
+        RAISERROR('El ID de socio debe ser un n√∫mero positivo.', 16, 1)
         RETURN
     END
 
     IF NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE NroSocio = @idSocio)
     BEGIN
-        RAISERROR('No se encontrÛ un socio con ese ID.', 16, 1)
+        RAISERROR('No se encontr√≥ un socio con ese ID.', 16, 1)
         RETURN
     END
 
@@ -902,7 +891,7 @@ BEGIN
     INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
     SELECT 
         'Actividad',
-        'InscripciÛn a actividad: ' + A.NombreActividad,
+        'Inscripci√≥n a actividad: ' + A.NombreActividad,
         A.Costo,
         @idFactura,
 		IA.idInscripcion
@@ -941,11 +930,11 @@ BEGIN
       SELECT 1 FROM dbsl.DetalleFactura DF
       WHERE DF.idInscripcion = I.idInscripcion
   );
-	-- 5. MembresÌa
+	-- 5. Membres√≠a
 	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
 	SELECT 
-		'MembresÌa',
-		'Cuota mensual por categorÌa: ' + cs.NombreCategoria,
+		'Membres√≠a',
+		'Cuota mensual por categor√≠a: ' + cs.NombreCategoria,
 		cs.Costo,
 		@idFactura
 	FROM dbsl.Socio s
@@ -969,7 +958,7 @@ BEGIN
 	WHERE I.NroSocio = @idSocio AND I.idPileta IS NOT NULL AND NOT EXISTS (
       SELECT 1 FROM dbsl.DetalleFactura DF
       WHERE DF.idInscripcion = I.idInscripcion
-  );
+  ) AND I.idInvitado IS NULL;
 
 	-- DESCUENTO Multiples Actividades
 	DECLARE @CantidadActividades INT;
@@ -986,7 +975,7 @@ BEGIN
 		WHERE idFactura = @idFactura AND tipoItem = 'Actividad';
 
 		INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura)
-		VALUES ('Descuento', '10% por m˙ltiples actividades', -@DescuentoActividades, @idFactura);
+		VALUES ('Descuento', '10% por m√∫ltiples actividades', -@DescuentoActividades, @idFactura);
 	END
 
 	-- DESCUENTO grupo familiar
@@ -1035,7 +1024,7 @@ BEGIN
     -- Validar entrada
     IF @Descripcion IS NULL OR LTRIM(RTRIM(@Descripcion)) = ''
     BEGIN
-        RAISERROR('La descripciÛn del mÈtodo de pago no puede estar vacÌa.', 16, 1);
+        RAISERROR('La descripci√≥n del m√©todo de pago no puede estar vac√≠a.', 16, 1);
         RETURN;
     END
 
@@ -1046,7 +1035,7 @@ BEGIN
         WHERE UPPER(Descripcion) = UPPER(@Descripcion)
     )
     BEGIN
-        RAISERROR('Ese mÈtodo de pago ya est· registrado.', 16, 1);
+        RAISERROR('Ese m√©todo de pago ya est√° registrado.', 16, 1);
         RETURN;
     END
 
@@ -1055,19 +1044,190 @@ BEGIN
     VALUES (@Descripcion);
 END;
 GO
+----------------Insertar Inscripci√≥n Invitado------------------------
+IF OBJECT_ID('dbsl.InsertarInscripcionInvitado', 'P') IS NOT NULL
+    DROP PROCEDURE dbsl.InsertarInscripcionInvitado;
+GO
 
+CREATE PROCEDURE dbsl.InsertarInscripcionInvitado
+    @NroSocio INT,
+    @idInvitado INT,
+    @idPileta INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Validar existencia del socio
+    IF NOT EXISTS (
+        SELECT 1 FROM dbsl.Socio WHERE NroSocio = @NroSocio
+    )
+    BEGIN
+        RAISERROR('El socio responsable no existe.', 16, 1);
+        RETURN;
+    END
+
+    -- 2. Validar existencia del invitado
+    IF NOT EXISTS (
+        SELECT 1 FROM dbsl.Invitado WHERE idInvitado = @idInvitado
+    )
+    BEGIN
+        RAISERROR('El invitado no existe.', 16, 1);
+        RETURN;
+    END
+
+    -- 3. Validar existencia del pase de pileta
+    IF NOT EXISTS (
+        SELECT 1 FROM dbsl.PiletaVerano WHERE idPileta = @idPileta
+    )
+    BEGIN
+        RAISERROR('El pase de pileta indicado no existe.', 16, 1);
+        RETURN;
+    END
+
+    -- 4. Insertar inscripci√≥n exclusiva a pileta para invitado
+    INSERT INTO dbsl.Inscripcion (
+        NroSocio,
+        idInvitado,
+        idPileta,
+        FechaIn
+    )
+    VALUES (
+        @NroSocio,
+        @idInvitado,
+        @idPileta,
+        GETDATE()
+    );
+END;
+GO
+--------------------Generar Factura Invitado---------------------------------
+IF OBJECT_ID('dbsl.GenerarFacturaInvitado', 'P') IS NOT NULL
+    DROP PROCEDURE dbsl.GenerarFacturaInvitado;
+GO
+
+CREATE PROCEDURE dbsl.GenerarFacturaInvitado
+    @idInscripcion INT       -- Inscripci√≥n ‚Äúmodo invitado‚Äù
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+ 
+    IF @idInscripcion IS NULL OR @idInscripcion <= 0
+    BEGIN
+        RAISERROR('Debe indicar un idInscripcion v√°lido.', 16, 1);
+        RETURN;
+    END
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbsl.Inscripcion
+        WHERE idInscripcion = @idInscripcion
+          AND idInvitado IS NOT NULL
+          AND idPileta   IS NOT NULL
+          AND idClase    IS NULL
+          AND idReserva  IS NULL
+          AND idColonia  IS NULL
+    )
+    BEGIN
+        RAISERROR('La inscripci√≥n indicada no corresponde a un invitado de pileta.', 16, 1);
+        RETURN;
+    END
+
+    /*‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ 2) OBTENER DATOS DEL INVITADO & PILETA ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ*/
+    DECLARE 
+        @idInvitado         INT,
+        @NroSocioResp       INT,
+        @idPileta           INT,
+        @FechaNacimiento    DATE,
+        @Edad               INT,
+        @TipoDePase         VARCHAR(20),
+        @Monto              INT,
+        @Hoy                DATE = GETDATE(),
+        @idFactura          INT;
+
+    SELECT 
+        @idInvitado      = Ins.idInvitado,
+        @idPileta        = Ins.idPileta,
+        @NroSocioResp    = Ins.NroSocio,
+        @FechaNacimiento = Inv.FechaNacimiento
+    FROM dbsl.Inscripcion  Ins
+    JOIN dbsl.Invitado     Inv ON Inv.idInvitado = Ins.idInvitado
+    WHERE Ins.idInscripcion = @idInscripcion;
+
+    --Calculo Edad para determinar el monto a cobrar
+    SELECT @Edad = DATEDIFF(YEAR, @FechaNacimiento, @Hoy)
+                  - CASE WHEN DATEADD(YEAR, DATEDIFF(YEAR, @FechaNacimiento, @Hoy), @FechaNacimiento) > @Hoy THEN 1 ELSE 0 END;
+
+    --Carga tipo de pase y el monto a cobrar dependiendo si es menor
+    SELECT  
+        @TipoDePase = PV.TipoDePase,
+        @Monto = CASE 
+                   WHEN @Edad < 13 THEN PV.CostoInvitadoMenor
+                   ELSE                 PV.CostoInvitadoAdulto
+                 END
+    FROM dbsl.PiletaVerano PV
+    WHERE PV.idPileta = @idPileta;
+
+    IF @Monto IS NULL
+    BEGIN
+        RAISERROR('No se pudo determinar el precio para el invitado.', 16, 1);
+        RETURN;
+    END
+
+    --Creaci√≥n factura
+    INSERT INTO dbsl.Factura (
+        FechaEmision,
+        FechaVencimiento,
+        FechaSegundoVencimiento,
+        Estado,
+        Total,
+        NroSocio      -- socio responsable
+    )
+    VALUES (
+        @Hoy,
+        DATEADD(DAY, 5,  @Hoy),
+        DATEADD(DAY, 10, @Hoy),
+        'Pendiente',
+        0,            -- se actualiza luego
+        @NroSocioResp
+    );
+
+    SET @idFactura = SCOPE_IDENTITY();
+
+    --Carga detalle
+    INSERT INTO dbsl.DetalleFactura (
+        tipoItem,
+        descripcion,
+        monto,
+        idFactura,
+        idInscripcion
+    )
+    VALUES (
+        'Pileta (Invitado)',
+        CONCAT('Pase ', @TipoDePase,
+               ' para invitado'),
+        @Monto,
+        @idFactura,
+        @idInscripcion
+    );
+
+    --Actualizaci√≥n del monto total
+    UPDATE dbsl.Factura
+    SET Total = @Monto
+    WHERE idFactura = @idFactura;
+END;
+GO
 ----Borrados logicos------------------------------------------------------------------------------------------------------------
---dbsl.Socio ñ Para mantener trazabilidad histÛrica y no perder informaciÛn de inscripciones pasadas.
+--dbsl.Socio ‚Äì Para mantener trazabilidad hist√≥rica y no perder informaci√≥n de inscripciones pasadas.
  
---dbsl.Usuario ñ Para deshabilitar el acceso sin perder su historial.
+--dbsl.Usuario ‚Äì Para deshabilitar el acceso sin perder su historial.
  
---dbsl.Actividad ñ Para conservar actividades que ya no se ofrecen.
+--dbsl.Actividad ‚Äì Para conservar actividades que ya no se ofrecen.
  
---dbsl.Clase ñ Si se deja de dictar una clase, puede desactivarse.
+--dbsl.Clase ‚Äì Si se deja de dictar una clase, puede desactivarse.
  
---dbsl.Reserva ñ Por razones de trazabilidad de uso del SUM.
+--dbsl.Reserva ‚Äì Por razones de trazabilidad de uso del SUM.
  
---dbsl.Inscripcion ñ Para saber quÈ inscripciones existieron, aunque ya no estÈn vigentes.
+--dbsl.Inscripcion ‚Äì Para saber qu√© inscripciones existieron, aunque ya no est√©n vigentes.
 
 --BORRAR SOCIO------------------------------
 
@@ -1081,7 +1241,7 @@ BEGIN
     -- Verifica existencia
     IF NOT EXISTS (SELECT 1 FROM dbsl.Socio WHERE NroSocio = @NroSocio)
     BEGIN
-        RAISERROR('No existe el socio con ese n˙mero.', 16, 1)
+        RAISERROR('No existe el socio con ese n√∫mero.', 16, 1)
         RETURN
     END
  
@@ -1176,7 +1336,7 @@ BEGIN
     -- Verifica existencia
     IF NOT EXISTS (SELECT 1 FROM dbsl.Reserva WHERE idReserva = @idReserva)
     BEGIN
-        RAISERROR('No existe reserva con ese n˙mero.', 16, 1)
+        RAISERROR('No existe reserva con ese n√∫mero.', 16, 1)
         RETURN
     END
  
@@ -1213,17 +1373,17 @@ END
 GO
 
 --------------------------------Borrado fisico de registro
---dbsl.CategoriaSocio ñ Se puede borrar siempre que no haya socios asociados.
+--dbsl.CategoriaSocio ‚Äì Se puede borrar siempre que no haya socios asociados.
 
---dbsl.GrupoFamiliar ñ Igual que arriba.
+--dbsl.GrupoFamiliar ‚Äì Igual que arriba.
 
---dbsl.Suum ñ Se puede eliminar si no tiene reservas asociadas.
+--dbsl.Suum ‚Äì Se puede eliminar si no tiene reservas asociadas.
 
---dbsl.MetodoPago ñ Siempre que no estÈ usado en Cobro.
+--dbsl.MetodoPago ‚Äì Siempre que no est√© usado en Cobro.
 
---dbsl.Factura, dbsl.Cobro, dbsl.DetalleFactura ñ En la vida real esto serÌa lÛgico por temas contables, pero seg˙n el ejercicio, puede ser fÌsico si no hay dependencia.
+--dbsl.Factura, dbsl.Cobro, dbsl.DetalleFactura ‚Äì En la vida real esto ser√≠a l√≥gico por temas contables, pero seg√∫n el ejercicio, puede ser f√≠sico si no hay dependencia.
 
---dbsl.PiletaVerano e dbsl.Invitado ñ Se pueden eliminar registros viejos si ya no son necesarios.
+--dbsl.PiletaVerano e dbsl.Invitado ‚Äì Se pueden eliminar registros viejos si ya no son necesarios.
 -----------------------------------------------------------
 
 --BORRAR Categoria de socio-----------------------------

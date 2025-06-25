@@ -105,6 +105,12 @@ CREATE TABLE dbsl.PiletaVerano(
 	CostoSocioMenor INT,
     CostoInvitadoMenor INT,
     Lluvia BIT NOT NULL DEFAULT 0
+)
+CREATE TABLE dbsl.Invitado (
+    idInvitado INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(50),
+    Apellido VARCHAR(50),
+    FechaNacimiento DATE,
 );
 
 CREATE TABLE dbsl.Inscripcion (
@@ -115,23 +121,16 @@ CREATE TABLE dbsl.Inscripcion (
     idReserva INT,
 	idPileta INT,
 	idColonia INT,
+	idInvitado INT,
     FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio),
     FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
     FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva),
 	FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta),
-	FOREIGN KEY (idColonia) REFERENCES dbsl.Colonia(idColonia)
-);
+	FOREIGN KEY (idColonia) REFERENCES dbsl.Colonia(idColonia),
+	FOREIGN KEY (idInvitado) REFERENCES dbsl.Invitado(idInvitado)
+)
  
-CREATE TABLE dbsl.Invitado (
-    idInvitado INT IDENTITY(1,1) PRIMARY KEY,
-    Nombre VARCHAR(50),
-    Apellido VARCHAR(50),
-    FechaInvitado DATE,
-    idInscripcion INT,
-    idPileta INT,
-    FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion),
-    FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta)
-);
+
  
 CREATE TABLE dbsl.MetodoPago (
     idMetodoPago INT IDENTITY(1,1) PRIMARY KEY,
