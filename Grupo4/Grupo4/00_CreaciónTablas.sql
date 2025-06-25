@@ -152,9 +152,7 @@ CREATE TABLE dbsl.Factura (
 CREATE TABLE dbsl.Cobro (
     idCobro INT IDENTITY(1,1) PRIMARY KEY,
     Monto INT,
-    Fecha DATE,
-    Reembolso BIT NOT NULL DEFAULT 0,
-    MontoReembolso INT,
+    FechaCobro DATE,
     idMetodoPago INT,
     idFactura INT,
     FOREIGN KEY (idMetodoPago) REFERENCES dbsl.MetodoPago(idMetodoPago),
