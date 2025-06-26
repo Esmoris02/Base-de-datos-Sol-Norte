@@ -415,6 +415,8 @@ BEGIN
 END
 GO
 
+
+
  --Factura-------------------------------------------------
  --Nos encontramos en la duda de si debiamos crear un procedure para el llenado de esta tabla debido a que sus
  --datos son calculados en base a datos de otras tablas.

@@ -203,6 +203,7 @@ EXEC dbsl.InsertarInscripcionInvitado @idInvitado = 1, @idPileta = 1, @NroSocio 
 ----------------INSERTAR METODO DE PAGO------------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
+
 --Error esperado:'Metodo de pago ya existe.'
 EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
 

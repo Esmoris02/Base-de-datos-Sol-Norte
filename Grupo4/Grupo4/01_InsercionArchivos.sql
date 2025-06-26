@@ -101,7 +101,6 @@ BEGIN
 
     PRINT 'Importación completada correctamente.'
 
-	DROP TABLE #TemporalSocio
 END
 GO
 
@@ -201,7 +200,6 @@ BEGIN
 
     PRINT 'Importacion completada correctamente.'
 
-	DROP TABLE #TemporalGrupoFamiliar
 END
 
 EXEC dbsl.spImportarGrupoFamiliar 'La ruta de su archivo Responsables_de_pago.csv'
@@ -219,6 +217,8 @@ select * from dbsl.Socio
 CREATE OR ALTER PROCEDURE dbsl.CargarEditarCategoriaSocio(@NombreCategoria varchar(50), @EdadDesde INT,@EdadHasta INT, @Costo INT,@VigenteHasta VARCHAR(15),@Accion CHAR)
 AS
 BEGIN
+	 SET NOCOUNT ON
+
 	if @accion = 'c'
 		BEGIN
 			INSERT INTO dbsl.CategoriaSocio(NombreCategoria,EdadDesde,EdadHasta,Costo,VigenteHasta)
@@ -382,7 +382,7 @@ BEGIN
         BULK INSERT #TempLluvia
         FROM ''' + @RutaArchivo + '''
         WITH (
-            FIRSTROW = 2,
+            FIRSTROW = 3,
             FIELDTERMINATOR = '','',
             ROWTERMINATOR  = ''0x0a'',
             CODEPAGE = ''65001'',
@@ -391,7 +391,7 @@ BEGIN
         EXEC sp_executesql @sql;
 
         
-        INSERT INTO dbsl.Lluvia (Fecha, Hora, Lluvia)
+        INSERT INTO dbsl.Lluvia (Fecha, Hora, Precipitacion)
         SELECT
             TRY_CAST(LEFT(FechaHora,10) AS date),
             TRY_CAST(SUBSTRING(FechaHora,12,5)+':00' AS time),
@@ -416,7 +416,7 @@ BEGIN
             BULK INSERT #TempLluvia
             FROM ''' + @RutaArchivo2 + '''
             WITH (
-                FIRSTROW = 2,
+                FIRSTROW = 3,
                 FIELDTERMINATOR = '','',
                 ROWTERMINATOR  = ''0x0a'',
                 CODEPAGE = ''65001'',
@@ -425,7 +425,7 @@ BEGIN
             EXEC sp_executesql @sql;
 
             -- Insertar sin duplicar
-            INSERT INTO dbsl.Lluvia (Fecha, Hora, Lluvia)
+            INSERT INTO dbsl.Lluvia (Fecha, Hora, Precipitacion)
             SELECT
                 TRY_CAST(LEFT(FechaHora,10) AS date),
                 TRY_CAST(SUBSTRING(FechaHora,12,5)+':00' AS time),
@@ -451,7 +451,7 @@ BEGIN
                     FROM dbsl.Lluvia L
                     WHERE L.Fecha = PV.Fecha
                       AND L.Hora BETWEEN '08:00:00' AND '20:00:00' --Solo nos importa si llovió en horario operativo del club.
-                      AND L.Lluvia > 0
+                      AND L.Precipitacion > 0
                 )
                 THEN 1
                 ELSE 0
@@ -553,9 +553,6 @@ BEGIN
 	FROM dbsl.PresentismoClases P
 	JOIN dbsl.Actividad A ON P.NombreActividad = A.NombreActividad
 
-	UPDATE 
-
-	DROP TABLE #TemporalPresentismo
 END
 
 EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
@@ -571,6 +568,7 @@ SELECT * FROM dbsl.PresentismoClases
 CREATE OR ALTER PROCEDURE dbsl.spActualizaCategoriaSocio
 AS
 BEGIN
+	 SET NOCOUNT ON
 
 	-- Socios con fecha de nacimiento
 	UPDATE S
@@ -646,11 +644,47 @@ BEGIN
 		SELECT * FROM #TemporalClases
         PRINT 'Importación exitosa.'
 
-		DROP TABLE #TemporalClases
 
 END
 
 EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
 --EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
+
+-----------------------------------METODO DE PAGO---------------------------------------------------------
+
+IF OBJECT_ID('dbsl.insertarMetodoPago','P') IS NOT NULL
+DROP PROCEDURE dbsl.insertarMetodoPago
+GO
+CREATE OR ALTER PROCEDURE dbsl.insertarMetodoPago
+	@Descripcion VARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	IF EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE Descripcion = @Descripcion)
+		BEGIN
+			RAISERROR('Metodo de pago ya existe.', 16, 1)
+			RETURN
+		END
+	INSERT INTO dbsl.MetodoPago VALUES (@Descripcion)
+END
+GO
+
+EXEC dbsl.insertarMetodoPago 'Credito';
+EXEC dbsl.insertarMetodoPago 'Debito';
+
+
+--SELECT*FROM dbsl.Cobro 
+--SELECT*FROM dbsl.Colonia
+--SELECT*FROM dbsl.DetalleFactura
+--SELECT*FROM dbsl.Factura
+--SELECT*FROM dbsl.Inscripcion
+--SELECT*FROM dbsl.PresentismoClases  --idClase
+--SELECT*FROM dbsl.Reembolso
+--SELECT*FROM dbsl.Reserva
+--SELECT*FROM dbsl.Socio --fecha nac saldo a favor
+--SELECT*FROM dbsl.Suum
+--SELECT*FROM dbsl.Usuario
+--SELECT*FROM dbsl.CategoriaSocio
 
 
