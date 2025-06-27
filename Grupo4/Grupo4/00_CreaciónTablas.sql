@@ -1,10 +1,14 @@
-create database ClubSolNorte
-go
-use ClubSolNorte
-go
-create schema dbsl
+CREATE DATABASE ClubSolNorte
+GO
+USE ClubSolNorte
+GO
+CREATE SCHEMA dbsl
 --data base sol norte
-go
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.CategoriaSocio') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.CategoriaSocio (
     idCategoria INT IDENTITY(1,1) PRIMARY KEY,
     NombreCategoria VARCHAR(50),
@@ -13,12 +17,23 @@ CREATE TABLE dbsl.CategoriaSocio (
 	Costo INT,
 	VigenteHasta VARCHAR(15)
 );
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.GrupoFamiliar') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.GrupoFamiliar (
     idGrupo INT IDENTITY(1,1) PRIMARY KEY,
     ResponsableNombre VARCHAR(50),
     Dni VARCHAR(20)
 );
-
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Socio') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Socio (
     NroSocio INT PRIMARY KEY,
     Estado VARCHAR(15),
@@ -37,7 +52,12 @@ CREATE TABLE dbsl.Socio (
     FOREIGN KEY (idCategoria) REFERENCES dbsl.CategoriaSocio(idCategoria),
     FOREIGN KEY (idGrupoFamiliar) REFERENCES dbsl.GrupoFamiliar(idGrupo)
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Usuario') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Usuario (
     Usuario VARCHAR(50) PRIMARY KEY,
     Estado VARCHAR(15),
@@ -47,14 +67,24 @@ CREATE TABLE dbsl.Usuario (
     NroSocio INT,
     FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio)
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Actividad') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Actividad (
     idActividad INT IDENTITY(1,1) PRIMARY KEY,
     Estado VARCHAR(15),
     NombreActividad VARCHAR(50),
     Costo INT
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Clase') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Clase (
     idClase INT IDENTITY(1,1) PRIMARY KEY,
     Estado VARCHAR(15),
@@ -64,13 +94,23 @@ CREATE TABLE dbsl.Clase (
     idActividad INT,
     FOREIGN KEY (idActividad) REFERENCES dbsl.Actividad(idActividad)
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Suum') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Suum (
     idSum INT IDENTITY(1,1) PRIMARY KEY,
     Descripcion VARCHAR(100),
     Precio INT
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Reserva') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Reserva (
     idReserva INT IDENTITY(1,1) PRIMARY KEY,
     idSum INT,
@@ -79,7 +119,12 @@ CREATE TABLE dbsl.Reserva (
     HoraFin TIME,
     FOREIGN KEY (idSum) REFERENCES dbsl.Suum(idSum)
 );
-
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Colonia') 
+                 AND type = 'U')
+BEGIN
  CREATE TABLE dbsl.Colonia(
     idColonia INT IDENTITY(1,1) PRIMARY KEY,
     Nombre VARCHAR(20),
@@ -88,14 +133,24 @@ CREATE TABLE dbsl.Reserva (
     fechaInicio Date,
     fechaFin Date
 );
-
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Lluvia') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Lluvia(
 	Fecha DATE,
 	Hora TIME,
-	Precipitacion FLOAT
+	Precipitacion DECIMAL (8,2)
 	CONSTRAINT PKLluvia PRIMARY KEY (fecha, hora)
 )
-
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.PiletaVerano') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.PiletaVerano(
     idPileta INT IDENTITY(1,1) PRIMARY KEY,
     Fecha DATE,
@@ -106,13 +161,24 @@ CREATE TABLE dbsl.PiletaVerano(
     CostoInvitadoMenor INT,
     Lluvia BIT NOT NULL DEFAULT 0
 )
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Invitado') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Invitado (
     idInvitado INT IDENTITY(1,1) PRIMARY KEY,
     Nombre VARCHAR(50),
     Apellido VARCHAR(50),
     FechaNacimiento DATE,
 );
-
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Inscripcion') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Inscripcion (
     idInscripcion INT IDENTITY(1,1) PRIMARY KEY,
     NroSocio INT,
@@ -128,15 +194,23 @@ CREATE TABLE dbsl.Inscripcion (
 	FOREIGN KEY (idPileta) REFERENCES dbsl.PiletaVerano(idPileta),
 	FOREIGN KEY (idColonia) REFERENCES dbsl.Colonia(idColonia),
 	FOREIGN KEY (idInvitado) REFERENCES dbsl.Invitado(idInvitado)
-)
- 
-
- 
+);
+END;
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.MetodoPago') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.MetodoPago (
     idMetodoPago INT IDENTITY(1,1) PRIMARY KEY,
     Descripcion VARCHAR(50)
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Factura') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Factura (
     idFactura INT IDENTITY(1,1) PRIMARY KEY,
     FechaEmision DATE,
@@ -147,7 +221,12 @@ CREATE TABLE dbsl.Factura (
 	NroSocio INT
  
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Cobro') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Cobro (
     idCobro INT IDENTITY(1,1) PRIMARY KEY,
     Monto INT,
@@ -157,7 +236,12 @@ CREATE TABLE dbsl.Cobro (
     FOREIGN KEY (idMetodoPago) REFERENCES dbsl.MetodoPago(idMetodoPago),
     FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura)
 );
- 
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.DetalleFactura') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.DetalleFactura (
     idDetalle INT IDENTITY(1,1) PRIMARY KEY,
     TipoItem VARCHAR(50),
@@ -168,7 +252,12 @@ CREATE TABLE dbsl.DetalleFactura (
     FOREIGN KEY (idFactura) REFERENCES dbsl.Factura(idFactura),
     FOREIGN KEY (idInscripcion) REFERENCES dbsl.Inscripcion(idInscripcion)
 );
-
+END;
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.Reembolso') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.Reembolso (
     idReembolso INT IDENTITY(1,1) PRIMARY KEY,
     idCobro INT NOT NULL,
@@ -180,6 +269,12 @@ CREATE TABLE dbsl.Reembolso (
     PagoACuenta BIT NOT NULL DEFAULT 0,
     FOREIGN KEY (idCobro) REFERENCES dbsl.Cobro(idCobro),
 );
+END;
+GO
+IF NOT EXISTS (SELECT * FROM sys.objects 
+               WHERE object_id = OBJECT_ID('dbsl.PresentismoClases') 
+                 AND type = 'U')
+BEGIN
 CREATE TABLE dbsl.PresentismoClases(
 	idPresentismo INT IDENTITY(1,1) PRIMARY KEY,
 	NombreActividad VARCHAR(50),
@@ -189,46 +284,29 @@ CREATE TABLE dbsl.PresentismoClases(
 	idClase INT,
 	FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
 );
- 
+END;
+GO
 
-drop table dbsl.PresentismoClases
-go
-drop table dbsl.Reembolso
-go
-drop table dbsl.DetalleFactura
-go
-drop table dbsl.Cobro
-go
-drop table dbsl.Factura
-go
-drop table dbsl.MetodoPago
-go
-drop table dbsl.Inscripcion
-go
-drop table dbsl.Invitado
-go
-drop table dbsl.PiletaVerano
-go
-drop table dbsl.Lluvia
-go
-drop table dbsl.Colonia
-go
-drop table dbsl.Reserva
-go
-drop table dbsl.Suum
-go
-drop table dbsl.Clase
-go
-drop table dbsl.Actividad
-go
-drop table dbsl.Usuario
-go
-drop table dbsl.Socio
-go
-drop table dbsl.CategoriaSocio
-go
-drop table dbsl.GrupoFamiliar
-go
+
+--DROP TABLE dbsl.Reembolso;
+--DROP TABLE dbsl.DetalleFactura;
+--DROP TABLE dbsl.Cobro;
+--DROP TABLE dbsl.Factura;
+--DROP TABLE dbsl.MetodoPago;
+--DROP TABLE dbsl.Inscripcion;
+--DROP TABLE dbsl.PresentismoClases;
+--DROP TABLE dbsl.Invitado;
+--DROP TABLE dbsl.PiletaVerano;
+--DROP TABLE dbsl.Lluvia;
+--DROP TABLE dbsl.Colonia;
+--DROP TABLE dbsl.Reserva;
+--DROP TABLE dbsl.Suum;
+--DROP TABLE dbsl.Clase;
+--DROP TABLE dbsl.Actividad;
+--DROP TABLE dbsl.Usuario;
+--DROP TABLE dbsl.Socio;
+--DROP TABLE dbsl.GrupoFamiliar;
+--DROP TABLE dbsl.CategoriaSocio;
 
 
 

@@ -15,7 +15,7 @@ go
 
 --Para importar los socios del archivo "Responsables_de_pago.csv" Creeamos el siguiente SP
 CREATE OR ALTER PROCEDURE dbsl.spImportarSocios
-    @RutaArchivo NVARCHAR(300)
+    @RutaArchivo VARCHAR(300)
 AS
 BEGIN
     SET NOCOUNT ON
@@ -106,7 +106,7 @@ GO
 
 
 EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
---EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
+EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Responsables_de_pago.csv'
@@ -119,7 +119,7 @@ DELETE FROM dbsl.Socio
 --Para importar los socios del archivo "Grupo_familiar.csv" Creamos el siguiente SP
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarGrupoFamiliar
-    @RutaArchivo NVARCHAR(300)
+    @RutaArchivo VARCHAR(300)
 AS
 BEGIN
     SET NOCOUNT ON
@@ -204,7 +204,7 @@ BEGIN
 END
 
 EXEC dbsl.spImportarGrupoFamiliar 'La ruta de su archivo Responsables_de_pago.csv'
---EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
+EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Grupo_familiar.csv'
@@ -363,8 +363,8 @@ SELECT * from dbsl.PiletaVerano
 --habia un error "Cannot obtain the required interface ("IID_IColumnsInfo") from OLE DB provider "BULK""
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarLluvia
-    @RutaArchivo NVARCHAR(300),
-    @RutaArchivo2 NVARCHAR(300) = NULL
+    @RutaArchivo VARCHAR(300),
+    @RutaArchivo2 VARCHAR(300) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -397,7 +397,7 @@ BEGIN
         SELECT
             TRY_CAST(LEFT(FechaHora,10) AS date),
             TRY_CAST(SUBSTRING(FechaHora,12,5)+':00' AS time),
-            TRY_CAST(Lluvia AS float)
+            TRY_CAST(Lluvia AS Decimal(8,2))
         FROM #TempLluvia T
         WHERE Lluvia IS NOT NULL
           AND NOT EXISTS (-- Evito duplicados porque ambos archivos csv tienen fechas iguales desde el 1-1-2025 
@@ -431,7 +431,7 @@ BEGIN
             SELECT
                 TRY_CAST(LEFT(FechaHora,10) AS date),
                 TRY_CAST(SUBSTRING(FechaHora,12,5)+':00' AS time),
-                TRY_CAST(Lluvia AS float)
+                TRY_CAST(Lluvia AS decimal(8,2))
             FROM #TempLluvia T
             WHERE Lluvia IS NOT NULL
               AND NOT EXISTS (-- Evito duplicados porque ambos archivos csv tienen fechas iguales desde el 1-1-2025 
@@ -486,13 +486,12 @@ EXEC dbsl.spImportarLluvia
     'Coloque la ruta de su archivo 2';
 
 
-
 ------------------------------------CARGAR Presentismo------------------------------------------------------------------------------------------------
 --Importamos el archivo Presentismo_actividades y luego actualizamos el ID Actividad en la misma tabla relacionandola con la tabla
 --actividades
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarPresentismo
-    @RutaArchivo NVARCHAR(300)
+    @RutaArchivo VARCHAR(300)
 AS
 BEGIN
     SET NOCOUNT ON
@@ -514,7 +513,7 @@ BEGIN
     BEGIN TRY
        
         -- Armar BULK INSERT dinámico
-        DECLARE @sql NVARCHAR(MAX);
+        DECLARE @sql VARCHAR(MAX);
         SET @sql = '
         BULK INSERT #TemporalPresentismo
         FROM ''' + @RutaArchivo + '''
@@ -551,10 +550,6 @@ BEGIN
         PRINT ERROR_MESSAGE();
     END CATCH
 
-	UPDATE P
-	SET P.idActividad = A.idActividad
-	FROM dbsl.PresentismoClases P
-	JOIN dbsl.Actividad A ON P.NombreActividad = A.NombreActividad
 
 END
 
@@ -599,7 +594,7 @@ EXEC dbsl.spActualizaCategoriaSocio
 --y funcionalidades.
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarClases
-    @RutaArchivo NVARCHAR(300)
+    @RutaArchivo VARCHAR(300)
 AS
 BEGIN
     SET NOCOUNT ON
@@ -712,4 +707,16 @@ BEGIN
 		WHEN 7 THEN 'Domingo'
 	  END
 END
+
+EXEC dbsl.ActualizaIdClasePresentismo
+
+SELECT*FROM dbsl.Socio
+SELECT*FROM dbsl.CategoriaSocio
+SELECT*FROM dbsl.GrupoFamiliar
+SELECT*FROM dbsl.PresentismoClases
+SELECT*FROM dbsl.Clase
+SELECT*FROM dbsl.Actividad
+SELECT*FROM dbsl.PiletaVerano
+SELECT*FROM dbsl.Lluvia
+SELECT*FROM dbsl.
 ------------------------------------------------------------------------------------------------------------------------
