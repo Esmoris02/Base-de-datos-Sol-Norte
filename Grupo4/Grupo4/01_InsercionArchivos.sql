@@ -109,6 +109,7 @@ EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Responsables_de_pago.csv'
 
 --Visualizar los resultados
 SELECT * FROM dbsl.Socio
@@ -206,6 +207,7 @@ EXEC dbsl.spImportarGrupoFamiliar 'La ruta de su archivo Responsables_de_pago.cs
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
+--EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Grupo_familiar.csv'
 
 --Visualizar resultado
 select * from dbsl.Socio
@@ -478,6 +480,7 @@ EXEC dbsl.spImportarLluvia
     'C:\ARCHIVOS\open-meteo-buenosaires_2024.csv',
     'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv';
 
+--EXEC dbsl.spImportarLluvia'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\open-meteo-buenosaires_2024.csv','C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\open-meteo-buenosaires_2025.csv';
 EXEC dbsl.spImportarLluvia
     'Coloque la ruta de su archivo 1',
     'Coloque la ruta de su archivo 2';
@@ -557,6 +560,7 @@ END
 
 EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
 --EXEC dbsl.spImportarPresentismo 'C:\Users\Usuario\Desktop\presentismo_actividades.csv'
+--EXEC dbsl.spImportarPresentismo 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\presentismo_actividades.csv'
 
 SELECT * FROM dbsl.PresentismoClases
 
@@ -649,6 +653,7 @@ END
 
 EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
 --EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
+--EXEC dbsl.spImportarClases 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Clases_Club.csv'
 
 -----------------------------------METODO DE PAGO---------------------------------------------------------
 
