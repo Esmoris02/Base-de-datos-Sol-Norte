@@ -33,7 +33,7 @@ CREATE TABLE dbsl.Socio (
     NumeroObraSocial VARCHAR(50),
     idCategoria INT,
     idGrupoFamiliar INT,
-	SaldoFavor INT,
+	SaldoFavor INT DEFAULT 0,
     FOREIGN KEY (idCategoria) REFERENCES dbsl.CategoriaSocio(idCategoria),
     FOREIGN KEY (idGrupoFamiliar) REFERENCES dbsl.GrupoFamiliar(idGrupo)
 );
@@ -190,7 +190,10 @@ CREATE TABLE dbsl.PresentismoClases(
 	FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
 );
  
-drop table dbsl.Colonia
+
+drop table dbsl.PresentismoClases
+go
+drop table dbsl.Reembolso
 go
 drop table dbsl.DetalleFactura
 go
@@ -200,9 +203,15 @@ drop table dbsl.Factura
 go
 drop table dbsl.MetodoPago
 go
+drop table dbsl.Inscripcion
+go
 drop table dbsl.Invitado
 go
-drop table dbsl.Inscripcion
+drop table dbsl.PiletaVerano
+go
+drop table dbsl.Lluvia
+go
+drop table dbsl.Colonia
 go
 drop table dbsl.Reserva
 go
@@ -216,17 +225,10 @@ drop table dbsl.Usuario
 go
 drop table dbsl.Socio
 go
-drop table dbsl.Categoria
+drop table dbsl.CategoriaSocio
 go
 drop table dbsl.GrupoFamiliar
 go
-drop table dbsl.PresentismoClases
-go
-drop table dbsl.Categoria
-drop table dbsl.Factura
-drop table dbsl.Reembolso
-drop table dbsl.Lluvia
-
 
 
 

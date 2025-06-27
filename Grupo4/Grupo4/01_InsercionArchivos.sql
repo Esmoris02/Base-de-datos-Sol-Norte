@@ -78,7 +78,7 @@ BEGIN
 		Nombre,
 		Apellido,
 		Dni,
-		TRY_CONVERT(DATE, LTRIM(RTRIM(FechaNac)), 103),    --Limpia espacios en blanco y convierte la fecha en formato DATE, aaaa mm dd
+		TRY_CONVERT(DATE, LTRIM(RTRIM(FechaNac)), 23),    --Limpia espacios en blanco y convierte la fecha en formato DATE, aaaa mm dd
         Telefono,  
         TelefonoEmergencia,
         Email,
@@ -684,13 +684,11 @@ EXEC dbsl.insertarMetodoPago 'Debito';
 --SELECT*FROM dbsl.DetalleFactura
 --SELECT*FROM dbsl.Factura
 --SELECT*FROM dbsl.Inscripcion
---SELECT*FROM dbsl.PresentismoClases  --idClase
 --SELECT*FROM dbsl.Reembolso
 --SELECT*FROM dbsl.Reserva
---SELECT*FROM dbsl.Socio --fecha nac saldo a favor
 --SELECT*FROM dbsl.Suum
 --SELECT*FROM dbsl.Usuario
---SELECT*FROM dbsl.CategoriaSocio
+
 
 ----------------------------Actualizar los idClase en la tabla PresentismoClases-------------------------------------
 CREATE OR ALTER PROCEDURE dbsl.ActualizaIdClasePresentismo
