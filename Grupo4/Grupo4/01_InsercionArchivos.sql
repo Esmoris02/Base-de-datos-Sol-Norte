@@ -687,4 +687,26 @@ EXEC dbsl.insertarMetodoPago 'Debito';
 --SELECT*FROM dbsl.Usuario
 --SELECT*FROM dbsl.CategoriaSocio
 
-
+----------------------------Actualizar los idClase en la tabla PresentismoClases-------------------------------------
+CREATE OR ALTER PROCEDURE dbsl.ActualizaIdClasePresentismo
+AS
+BEGIN
+	UPDATE P
+	SET P.idClase = C.idClase
+	FROM dbsl.PresentismoClases P
+	INNER JOIN dbsl.Socio S ON S.NroSocio = P.NroSocio
+	INNER JOIN dbsl.Clase C ON 
+		C.idActividad IN(SELECT A.idActividad FROM dbsl.Actividad A WHERE A.NombreActividad = P.NombreActividad)
+		AND C.Categoria IN (SELECT CS.NombreCategoria FROM dbsl.CategoriaSocio CS WHERE S.idCategoria = CS.idCategoria)
+		AND C.Dia = 
+	  CASE DATEPART(WEEKDAY, P.Fecha)
+		WHEN 1 THEN 'Lunes'
+		WHEN 2 THEN 'Martes'
+		WHEN 3 THEN 'Miércoles'
+		WHEN 4 THEN 'Jueves'
+		WHEN 5 THEN 'Viernes'
+		WHEN 6 THEN 'Sábado'
+		WHEN 7 THEN 'Domingo'
+	  END
+END
+------------------------------------------------------------------------------------------------------------------------

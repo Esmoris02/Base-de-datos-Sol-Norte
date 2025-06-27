@@ -133,25 +133,22 @@ EXEC dbsl.ReporteTotalInasistenciasPorCategoriaSocioYActividad
 -----------------REPORTE 4---------------------------------------------------------------------------------------
 --Reporte que contenga a los socios que no han asistido a alguna clase de la actividad que
 --realizan. El reporte debe contener: Nombre, Apellido, edad, categoría y la actividad
-
---NO FUE TESTEADO TODAVIA DEBIDO A QUE CREAMOS CLASES ALEATORIAS PERO NO TENEMOS IDCLASE EN PRESENTISMO 
---PORQUE NO VIENE POR INTEGRACION TENDRIAMOS QUE ELEGIRLO EN EL ARCH DE PRUEBA
 --------------------------------------------------------------------------------------------------------
-CREATE PROCEDURE dbsl.ReporteInasistenciasActividad
+CREATE OR ALTER PROCEDURE dbsl.ReporteInasistenciasActividad
 AS
 BEGIN
-    SELECT 
+    SELECT DISTINCT 
         S.NroSocio,
         S.Nombre,
         S.Apellido,
         DATEDIFF(YEAR, S.FechaNac, GETDATE()) AS Edad,
-        CS.NombreCategoria,
-        A.NombreActividad
+        P.NombreActividad,
+        CS.NombreCategoria
     FROM dbsl.PresentismoClases P
     INNER JOIN dbsl.Socio S ON P.NroSocio = S.NroSocio
     INNER JOIN dbsl.CategoriaSocio CS ON S.idCategoria = CS.idCategoria
-    INNER JOIN dbsl.Clase C ON P.idClase = C.idClase
-    INNER JOIN dbsl.Actividad A ON C.idActividad = A.idActividad
     WHERE P.Asistencia = 'A'
     ORDER BY S.Apellido, S.Nombre;
 END
+
+EXEC dbsl.ReporteInasistenciasActividad

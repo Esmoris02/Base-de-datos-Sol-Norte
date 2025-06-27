@@ -182,14 +182,13 @@ CREATE TABLE dbsl.Reembolso (
 );
 CREATE TABLE dbsl.PresentismoClases(
 	idPresentismo INT IDENTITY(1,1) PRIMARY KEY,
-	idActividad INT,
 	NombreActividad VARCHAR(50),
 	NroSocio INT,
 	Fecha DATE,
 	Asistencia CHAR(1) CHECK (Asistencia IN ('A','J','P')),
-	FOREIGN KEY (idActividad) REFERENCES dbsl.Actividad(idActividad)
+	idClase INT,
+	FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
 );
-ALTER TABLE dbsl.PresentismoClases ADD idClase INT FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase)
  
 drop table dbsl.Colonia
 go
