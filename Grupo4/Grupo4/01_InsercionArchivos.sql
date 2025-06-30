@@ -672,6 +672,7 @@ GO
 
 EXEC dbsl.insertarMetodoPago 'Credito';
 EXEC dbsl.insertarMetodoPago 'Debito';
+EXEC dbsl.insertarMetodoPago 'Pago en Cuenta';
 
 
 --SELECT*FROM dbsl.Cobro 

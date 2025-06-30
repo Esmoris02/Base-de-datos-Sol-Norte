@@ -23,6 +23,7 @@ go
 
 --Error esperado:'El Nombre de Categoria ya existe.'
 --EXEC dbsl.InsertarCategoriaSocio 'Cadete', 13, 17,10
+--select * from dbsl.CategoriaSocio
 ---------INSEERTAR SOCIO-------------
 --Se espera que se inserte correctamente
 EXEC dbsl.InsertarSocio
@@ -119,15 +120,15 @@ go
 ----Error esperado : "Ingresa un horario valido entre las 08:00 y 22:00 en intervalos de 30 min"
 --EXEC dbsl.InsertarClase 'activo', 'Lunes', '03:00', 'Adulto', 1
 ----Se espera que se inserte correctamente
-EXEC dbsl.InsertarClase 'activo', 'Jueves', '10:30', 'Cadete', 1;
-go
---Se espera que se inserte correctamente
-EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Adulto', 1;
-go
+--EXEC dbsl.InsertarClase 'activo', 'Jueves', '10:30', 'Menor', 1;
+--go
+----Se espera que se inserte correctamente
+--EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Mayor', 1;
+--go
 ----Error esperado:"Ya existe una clase para esa actividad, día y horario."
 --EXEC dbsl.InsertarClase 'activo', 'Miercoles', '11:00', 'Menor', 3
 ----Error esperado "Estado incorrecto. Usa "activo" o "inactivo".
---EXEC dbsl.InsertarClase 'empty', 'Jueves', '15:00', 'Adulto', 1
+--EXEC dbsl.InsertarClase 'empty', 'Jueves', '15:00', 'Mayor', 1
 ----Se espera que se inserte correctamente
 --EXEC dbsl.InsertarClase 'activo', 'Viernes', '20:00', 'Cadete', 2
 ----Error esperado "La actividad especificada no existe."
@@ -176,8 +177,8 @@ go
 ----------------INSERTAR INSCRIPCION-----------------------
 
 -- Actividad
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
-go
+--EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 1, @FechaIn = '2025-12-20';
+--go
 EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idClase = 2, @FechaIn = '2025-12-20';
 go
 -- Reserva de SUM

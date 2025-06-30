@@ -288,9 +288,9 @@ BEGIN
     END
  
  
-	IF(@Categoria NOT IN ('Menor','Cadete','Adulto'))
+	IF(@Categoria NOT IN ('Menor','Cadete','Mayor'))
 		BEGIN
-			RAISERROR('Categoria invalida. Ingresa "Menor", "Cadete" o "Adulto"', 16, 1)
+			RAISERROR('Categoria invalida. Ingresa "Menor", "Cadete" o "Mayor"', 16, 1)
 			RETURN;
 		END
  
@@ -308,6 +308,7 @@ BEGIN
         RAISERROR('Ya existe una clase para esa actividad, día y horario.', 16, 1)
         RETURN
     END
+
  
  
     INSERT INTO dbsl.Clase (Dia,Horario, Categoria, idActividad, Estado)
@@ -838,6 +839,38 @@ BEGIN
         RAISERROR('La colonia no existe.', 16, 1);
         RETURN;
     END
+
+	IF @idClase IS NOT NULL            -- sólo aplica cuando se trata de una clase
+	BEGIN
+		DECLARE 
+			@NombreCatSocio  VARCHAR(50),
+			@NombreCatClase  VARCHAR(50);
+
+		--Obtengo categoria socio
+		SELECT @NombreCatSocio = UPPER(LTRIM(RTRIM(CS.NombreCategoria)))
+		FROM   dbsl.Socio          S
+		JOIN   dbsl.CategoriaSocio CS ON CS.idCategoria = S.idCategoria
+		WHERE  S.NroSocio = @NroSocio;
+
+		--Obtengo clase
+		SELECT @NombreCatClase = UPPER(LTRIM(RTRIM(C.Categoria)))
+		FROM   dbsl.Clase C
+		WHERE  C.idClase = @idClase;        
+
+		--
+		IF @NombreCatSocio IS NULL OR @NombreCatClase IS NULL
+		BEGIN
+			RAISERROR('No se pudo determinar la categoría del socio o de la clase.', 16, 1);
+			RETURN;
+		END
+
+		/* 4) Comparar nombres (case‑insensitive) */
+		IF @NombreCatSocio <> @NombreCatClase
+		BEGIN
+			RAISERROR('El socio no puede inscribirse a una clase de una categoría diferente a la suya.', 16, 1);
+			RETURN;
+		END
+	END
 
     -- Insertar inscripción
     INSERT INTO dbsl.Inscripcion (NroSocio, idClase, idReserva, idPileta,idColonia, FechaIn)
