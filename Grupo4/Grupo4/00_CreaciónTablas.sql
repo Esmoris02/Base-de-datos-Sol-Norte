@@ -1,8 +1,8 @@
-CREATE DATABASE ClubSolNorte
-GO
+--CREATE DATABASE ClubSolNorte
+--GO
 USE ClubSolNorte
 GO
-CREATE SCHEMA dbsl
+--CREATE SCHEMA dbsl
 --data base sol norte
 GO
 IF NOT EXISTS (SELECT * FROM sys.objects 
@@ -289,24 +289,43 @@ GO
 
 
 --DROP TABLE dbsl.Reembolso;
+--go
 --DROP TABLE dbsl.DetalleFactura;
+--go
 --DROP TABLE dbsl.Cobro;
+--go
 --DROP TABLE dbsl.Factura;
+--go
 --DROP TABLE dbsl.MetodoPago;
+--go
 --DROP TABLE dbsl.Inscripcion;
+--go
 --DROP TABLE dbsl.PresentismoClases;
+--go
 --DROP TABLE dbsl.Invitado;
+--go
 --DROP TABLE dbsl.PiletaVerano;
+--go
 --DROP TABLE dbsl.Lluvia;
+--go
 --DROP TABLE dbsl.Colonia;
+--go
 --DROP TABLE dbsl.Reserva;
+--go
 --DROP TABLE dbsl.Suum;
+--go
 --DROP TABLE dbsl.Clase;
+--go
 --DROP TABLE dbsl.Actividad;
+--go
 --DROP TABLE dbsl.Usuario;
+--go
 --DROP TABLE dbsl.Socio;
+--go
 --DROP TABLE dbsl.GrupoFamiliar;
+--go
 --DROP TABLE dbsl.CategoriaSocio;
+--go
 
 
 
