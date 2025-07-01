@@ -598,6 +598,34 @@ BEGIN
     -- Obtener el total actualizado
     SELECT @total = Total FROM dbsl.Factura WHERE idFactura = @idFactura;
 
+	-- Obtener total de la factura y el NroSocio
+	DECLARE @NroSocio INT, @SaldoActual INT, @MontoUsado INT, @MontoFinal INT;
+
+	SELECT 
+		@NroSocio = NroSocio
+	FROM dbsl.Factura
+	WHERE idFactura = @idFactura;
+
+	-- Obtener el saldo a favor
+	SELECT @SaldoActual = ISNULL(SaldoFavor, 0)
+	FROM dbsl.Socio
+	WHERE NroSocio = @NroSocio;
+
+	-- Calcular cuánto usar
+	SET @MontoUsado = CASE 
+						WHEN @SaldoActual >= @total THEN @total
+						ELSE @SaldoActual
+					  END;
+
+	-- Calcular monto final a cobrar (lo que efectivamente se paga)
+	SET @total = @total - @MontoUsado;
+
+	-- Actualizar el saldo a favor del socio
+	UPDATE dbsl.Socio
+	SET SaldoFavor = SaldoFavor - @MontoUsado
+	WHERE NroSocio = @NroSocio;
+
+
     -- Registrar el cobro
     INSERT INTO dbsl.Cobro (FechaCobro, idMetodoPago, Monto, idFactura)
     VALUES (@fechaActual, @idMetodoPago, @total, @idFactura);

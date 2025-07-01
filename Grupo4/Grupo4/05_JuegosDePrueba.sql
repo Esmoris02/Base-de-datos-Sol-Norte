@@ -238,6 +238,8 @@ go
 ----------------INSERTAR COBRO----------------------------
 ----Se espera que se ingrese correctamente
 --EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=1;
+----Se espera que se ingrese correctamente
+--EXEC dbsl.insertarCobro @idFactura=2,@idMetodoPago=1;
 ----Error esperado:'Metodo de pago inexistente.'
 --EXEC dbsl.insertarCobro  @idFactura=3,@idMetodoPago=9;
 
