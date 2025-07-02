@@ -936,7 +936,7 @@ BEGIN
     FROM dbsl.Inscripcion IA
     INNER JOIN dbsl.Clase C ON IA.idClase = C.idClase
     INNER JOIN dbsl.Actividad A ON C.idActividad = A.idActividad
-    WHERE IA.NroSocio = @idSocio;
+    WHERE IA.NroSocio = @idSocio AND IA.Estado = 1;
 
     -- 3. Colonia
     INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
@@ -948,7 +948,7 @@ BEGIN
 		I.idInscripcion
 	FROM dbsl.Inscripcion I
 	JOIN dbsl.Colonia C ON I.idColonia = C.idColonia
-	WHERE I.NroSocio = @idSocio AND I.idColonia IS NOT NULL AND NOT EXISTS (
+	WHERE I.NroSocio = @idSocio AND I.Estado = 1 AND I.idColonia IS NOT NULL AND NOT EXISTS (
       SELECT 1 FROM dbsl.DetalleFactura DF
       WHERE DF.idInscripcion = I.idInscripcion
   );
@@ -964,7 +964,7 @@ BEGIN
     FROM dbsl.Inscripcion I
     INNER JOIN dbsl.Reserva R ON I.idReserva = R.idReserva
     INNER JOIN dbsl.Suum S ON R.idSum = S.idSum
-    WHERE I.NroSocio = @idSocio AND NOT EXISTS (
+    WHERE I.NroSocio = @idSocio AND I.Estado = 1 AND NOT EXISTS (
       SELECT 1 FROM dbsl.DetalleFactura DF
       WHERE DF.idInscripcion = I.idInscripcion
   );
@@ -978,6 +978,7 @@ BEGIN
 	FROM dbsl.Socio s
 	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
 	WHERE s.NroSocio = @idSocio;
+
 	-- 6. Pileta de Verano
 	INSERT INTO dbsl.DetalleFactura (tipoItem, descripcion, monto, idFactura,idInscripcion)
 	SELECT 
@@ -993,7 +994,7 @@ BEGIN
 	JOIN dbsl.PiletaVerano pv ON I.idPileta = pv.idPileta
 	JOIN dbsl.Socio s ON I.NroSocio = s.NroSocio
 	JOIN dbsl.CategoriaSocio cs ON s.idCategoria = cs.idCategoria
-	WHERE I.NroSocio = @idSocio AND I.idPileta IS NOT NULL AND NOT EXISTS (
+	WHERE I.NroSocio = @idSocio AND I.Estado = 1 AND I.idPileta IS NOT NULL AND NOT EXISTS (
       SELECT 1 FROM dbsl.DetalleFactura DF
       WHERE DF.idInscripcion = I.idInscripcion
   ) AND I.idInvitado IS NULL;
@@ -1384,6 +1385,33 @@ BEGIN
     WHERE idClase = @idClase
  
 END
+GO
+-------Borrado Inscripción------------
+IF OBJECT_ID('dbsl.BorrarInscripcion', 'P') IS NOT NULL
+    DROP PROCEDURE dbsl.BorrarInscripcion;
+GO
+
+CREATE PROCEDURE dbsl.BorrarInscripcion
+    @idInscripcion INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM dbsl.Inscripcion
+        WHERE idInscripcion = @idInscripcion
+    )
+    BEGIN
+        RAISERROR('La inscripción indicada no existe.', 16, 1);
+        RETURN;
+    END
+
+    UPDATE dbsl.Inscripcion
+    SET Estado = 0
+    WHERE idInscripcion = @idInscripcion;
+
+    PRINT 'Inscripción anulada correctamente.';
+END;
 GO
 
 

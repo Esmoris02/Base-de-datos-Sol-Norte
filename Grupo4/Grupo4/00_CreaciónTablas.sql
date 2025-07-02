@@ -188,6 +188,7 @@ CREATE TABLE dbsl.Inscripcion (
 	idPileta INT,
 	idColonia INT,
 	idInvitado INT,
+	Estado BIT NOT NULL DEFAULT 1,
     FOREIGN KEY (NroSocio) REFERENCES dbsl.Socio(NroSocio),
     FOREIGN KEY (idClase) REFERENCES dbsl.Clase(idClase),
     FOREIGN KEY (idReserva) REFERENCES dbsl.Reserva(idReserva),
@@ -286,7 +287,6 @@ CREATE TABLE dbsl.PresentismoClases(
 );
 END;
 GO
-
 
 --DROP TABLE dbsl.Reembolso;
 --go
