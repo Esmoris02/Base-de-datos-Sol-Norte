@@ -160,6 +160,7 @@ go
 --Se espera que se ingrese correctamente
 EXEC dbsl.InsertarReserva @idSum = 1,@FechaReserva = '2025-12-28',@HoraInicio = '10:00',@HoraFin = '12:00';
 go
+
 --select* from dbsl.Reserva
 --------------INSERTAR PILETVERANO-------------------
 -- Valor del Mes
@@ -196,6 +197,8 @@ go
 --------------INSERTAR INVITADO------------------------
 --Se espera que se ingrese correctamente
 EXEC dbsl.insertarInvitado 'Matías', 'Fernández', '2019-06-01';
+--Se espera que se ingrese correctamente
+EXEC dbsl.insertarInvitado 'juan', 'Fernández', '2019-06-01';
 
 ---- Error esperado: 'Ingrese nuevamente los datos para nombre y apellido'
 --EXEC dbsl.insertarInvitado '', 'Rodríguez', '1999-06-01';
@@ -210,6 +213,7 @@ EXEC dbsl.insertarInvitado 'Matías', 'Fernández', '2019-06-01';
 --------------------INSERTAR INSCRIPCION INVITADO --------------
 EXEC dbsl.InsertarInscripcionInvitado @idInvitado = 1, @idPileta = 1, @NroSocio = 1001;
 go
+select *from dbsl.Inscripcion
 ----------------INSERTAR METODO DE PAGO------------------
 --Se espera que se ingrese correctamente
 --EXEC dbsl.insertarMetodoPago @Descripcion = 'Tarjeta de Crédito'
@@ -228,13 +232,13 @@ go
 ----Error esperado: 'El ID de socio debe ser un número positivo.'
 --EXEC dbsl.GenerarFactura -5;
 
---SELECT * FROM dbsl.Factura;
---SELECT * FROM dbsl.DetalleFactura;
+--select * FROM dbsl.Factura;
+--select * FROM dbsl.DetalleFactura;
 
 --DELETE FROM dbsl.DetalleFactura;
 --DELETE FROM dbsl.Factura;
 ------------------GENERAR FACTURA INVITADO---------------
---EXEC dbsl.GenerarFacturaInvitado @idInscripcion = 6;
+--EXEC dbsl.GenerarFacturaInvitado @idInscripcion = 5;
 ----------------INSERTAR COBRO----------------------------
 ----Se espera que se ingrese correctamente
 --EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=1;
@@ -252,5 +256,4 @@ go
 --EXEC dbsl.InsertarReembolso @idCobro = 1,@NroSocio=1001,@Porcentaje = 100,@Motivo = 'Suspensión por fuerza mayor',@PagoACuenta = 1;
 --select * from dbsl.Reembolso
 --delete from dbsl.Reembolso
-
 

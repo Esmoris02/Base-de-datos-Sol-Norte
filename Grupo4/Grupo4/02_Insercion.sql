@@ -45,7 +45,7 @@ END
 GO
 --Grupo Familiar-------------------------------------------------
 
-IF OBJECT_ID('dbs1.insertarGrupoFamiliar','P') IS NOT NULL
+IF OBJECT_ID('dbsl.insertarGrupoFamiliar','P') IS NOT NULL
 DROP PROCEDURE dbsl.insertarGrupoFamiliar
 GO
 CREATE PROCEDURE dbsl.insertarGrupoFamiliar(
@@ -418,32 +418,7 @@ GO
 
 
 
- --Factura-------------------------------------------------
- --Nos encontramos en la duda de si debiamos crear un procedure para el llenado de esta tabla debido a que sus
- --datos son calculados en base a datos de otras tablas.
-IF OBJECT_ID('dbsl.insertarFactura','P') IS NOT NULL
-DROP PROCEDURE dbsl.insertarFactura
-GO
-CREATE PROCEDURE dbsl.insertarFactura
-	@FechaEmision DATE,
-	@Estado VARCHAR(20),
-	@idInscripcion INT
-AS
-BEGIN
-	
-	IF NOT EXISTS (SELECT 1 FROM dbsl.Inscripcion WHERE idInscripcion = @idInscripcion)
-		BEGIN
-			RAISERROR('La inscripcion asociada no existe.', 16, 1)
-			RETURN
-		END
 
-	DECLARE @FechaVencimiento DATE = DATEADD(DAY, 5, @FechaEmision)
-    DECLARE @FechaSegundoVencimiento DATE = DATEADD(DAY, 5, @FechaVencimiento)
-
-	INSERT INTO dbsl.Factura (FechaEmision, FechaVencimiento, FechaSegundoVencimiento, Estado, Total, idInscripcion)
-	VALUES (@FechaEmision, @FechaVencimiento, @FechaSegundoVencimiento, @Estado, @Total, @idInscripcion)
-END
-GO
 ------- Reembolso---------
 IF OBJECT_ID('dbsl.InsertarReembolso', 'P') IS NOT NULL
 DROP PROCEDURE dbsl.InsertarReembolso;
@@ -1146,6 +1121,30 @@ BEGIN
         RAISERROR('El pase de pileta indicado no existe.', 16, 1);
         RETURN;
     END
+	-- 4 validar que no se inscriba nuevamente al mismo pase
+	IF EXISTS (SELECT 1
+               FROM dbsl.Inscripcion
+               WHERE idInvitado = @idInvitado AND idPileta = @idPileta)
+    BEGIN
+        RAISERROR('Este invitado ya está inscripto a ese pase.', 16, 1); RETURN;
+    END
+
+	--Corroboro que se puede inscribir al pase si el precio no es 0
+	DECLARE @CostoMenor  INT,@CostoAdulto INT;
+
+	SELECT
+		@CostoMenor  = PV.CostoInvitadoMenor,
+		@CostoAdulto = PV.CostoInvitadoAdulto
+	FROM dbsl.PiletaVerano PV
+	WHERE PV.idPileta = @idPileta;
+
+	/* Si ambos precios son nulos o cero → NO permitir inscripción */
+	IF (ISNULL(@CostoMenor, 0) <= 0) AND (ISNULL(@CostoAdulto, 0) <= 0)
+	BEGIN
+		RAISERROR('No se puede inscribir: el pase de pileta tiene precios de invitado en 0.', 16, 1);
+		RETURN;
+	END
+
 
     -- 4. Insertar inscripción exclusiva a pileta para invitado
     INSERT INTO dbsl.Inscripcion (
@@ -1195,7 +1194,7 @@ BEGIN
         RETURN;
     END
 
-    /*──────── 2) OBTENER DATOS DEL INVITADO & PILETA ────────*/
+    -- OBTENER DATOS DEL INVITADO & PILETA 
     DECLARE 
         @idInvitado         INT,
         @NroSocioResp       INT,
@@ -1387,53 +1386,6 @@ BEGIN
 END
 GO
 
---BORRAR Reserva------------------------------
-
-IF OBJECT_ID('dbsl.borrarLogicoReserva','P') IS NOT NULL
-DROP PROCEDURE dbsl.borrarLogicoReserva
-GO
-CREATE PROCEDURE dbsl.borrarLogicoReserva
-    @idReserva INT
-AS
-BEGIN
-    -- Verifica existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.Reserva WHERE idReserva = @idReserva)
-    BEGIN
-        RAISERROR('No existe reserva con ese número.', 16, 1)
-        RETURN
-    END
- 
-    -- Marca como borrado
-    UPDATE dbsl.Reserva
-    SET Estado = 'Borrado'
-    WHERE idReserva = @idReserva
- 
-END
-GO
-
---BORRAR Inscripcion------------------------------
-
-IF OBJECT_ID('dbsl.borrarLogicoInscripcion','P') IS NOT NULL
-DROP PROCEDURE dbsl.borrarLogicoInscripcion
-GO
-CREATE PROCEDURE dbsl.borrarLogicoInscripcion
-    @idInscripcion INT
-AS
-BEGIN
-    -- Verifica existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.Clase WHERE idInscripcion = @idInscripcion)
-    BEGIN
-        RAISERROR('No existe inscripcion con id', 16, 1)
-        RETURN
-    END
- 
-    -- Marca como borrado
-    UPDATE dbsl.Inscripcion
-    SET Estado = 'Borrado'
-    WHERE idInscripcion = @idInscripcion
- 
-END
-GO
 
 --------------------------------Borrado fisico de registro
 --dbsl.CategoriaSocio – Se puede borrar siempre que no haya socios asociados.
@@ -1474,48 +1426,50 @@ GO
 
 --BORRAR Grupo Familiar------------------------------
 
-IF OBJECT_ID('dbsl.eliminarGrupoFamiliar','P') IS NOT NULL
-DROP PROCEDURE dbsl.eliminarGrupoFamiliar
+IF OBJECT_ID('dbsl.EliminarGrupoFamiliar','P') IS NOT NULL
+    DROP PROCEDURE dbsl.EliminarGrupoFamiliar;
 GO
-CREATE PROCEDURE dbsl.eliminarGrupoFamiliar
+
+CREATE PROCEDURE dbsl.EliminarGrupoFamiliar
     @idGrupo INT
 AS
 BEGIN
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE idGrupo = @idGrupo)
+    IF NOT EXISTS (
+        SELECT 1 FROM dbsl.GrupoFamiliar WHERE idGrupo = @idGrupo
+    )
     BEGIN
-        RAISERROR('El grupo no existe', 16, 1)
-        RETURN
+        RAISERROR('El grupo familiar indicado no existe.', 16, 1);
+        RETURN;
     END
 
-    -- Eliminar el registro
+    -- Eliminar registro
     DELETE FROM dbsl.GrupoFamiliar
-    WHERE idGrupo = @idGrupo
-
-END
-go
+    WHERE idGrupo = @idGrupo;
+END;
+GO
 
 --BORRAR SUM------------------------------
 
-IF OBJECT_ID('dbsl.eliminarSum','P') IS NOT NULL
-DROP PROCEDURE dbsl.eliminarSum
+IF OBJECT_ID('dbsl.EliminarSum','P') IS NOT NULL
+    DROP PROCEDURE dbsl.EliminarSum;
 GO
-CREATE PROCEDURE dbsl.eliminarSum
+
+CREATE PROCEDURE dbsl.EliminarSum
     @idSum INT
 AS
 BEGIN
-    -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.CategoriaSocio WHERE idSum = @idSum)
+    IF NOT EXISTS (
+        SELECT 1 FROM dbsl.Suum WHERE idSum = @idSum
+    )
     BEGIN
-        RAISERROR('El sum indicado no existe', 16, 1)
-        RETURN
+        RAISERROR('El SUM indicado no existe.', 16, 1);
+        RETURN;
     END
 
-    -- Eliminar el registro
-    DELETE FROM dbsl.SUUM
-    WHERE idSum = @idSum
-
-END
+    DELETE FROM dbsl.Suum
+    WHERE idSum = @idSum;
+END;
 GO
 
 --BORRAR Metodo de Pago------------------------------
@@ -1543,47 +1497,63 @@ GO
 
 --BORRAR Eliminar Factura------------------------------
 
-IF OBJECT_ID('dbsl.EliminarFactura','P') IS NOT NULL
-DROP PROCEDURE dbsl.EliminarFactura
+IF OBJECT_ID('dbsl.EliminarFactura', 'P') IS NOT NULL
+    DROP PROCEDURE dbsl.EliminarFactura;
 GO
+
 CREATE PROCEDURE dbsl.EliminarFactura
     @idFactura INT
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM dbsl.Factura WHERE idFactura = @idFactura)
     BEGIN
-        RAISERROR('La factura indicada no existe', 16, 1)
-        RETURN
+        RAISERROR('La factura indicada no existe.', 16, 1);
+        RETURN;
     END
 
-    -- Eliminar el registro
-    DELETE FROM dbsl.Factura
-    WHERE idFactura = @idFactura
+    -- Evitar eliminar facturas ya pagadas
+    IF EXISTS (
+        SELECT 1 FROM dbsl.Factura WHERE idFactura = @idFactura AND Estado = 'Pagada'
+    )
+    BEGIN
+        RAISERROR('No se puede eliminar una factura que ya fue pagada.', 16, 1);
+        RETURN;
+    END
 
-END
+    -- 1. Eliminar los detalles primero
+    DELETE FROM dbsl.DetalleFactura
+    WHERE idFactura = @idFactura;
+
+    -- 2. Eliminar la factura
+    DELETE FROM dbsl.Factura
+    WHERE idFactura = @idFactura;
+
+END;
 GO
 
 --BORRAR Pileta Verano------------------------------
 
 IF OBJECT_ID('dbsl.EliminarPiletaVerano','P') IS NOT NULL
-DROP PROCEDURE dbsl.EliminarPiletaVerano
+    DROP PROCEDURE dbsl.EliminarPiletaVerano;
 GO
+
 CREATE PROCEDURE dbsl.EliminarPiletaVerano
-    @idFactura INT
+    @idPileta INT
 AS
 BEGIN
-    -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM dbsl.MetodoPago WHERE idFactura = @idFactura)
+    IF NOT EXISTS (
+        SELECT 1 FROM dbsl.PiletaVerano WHERE idPileta = @idPileta
+    )
     BEGIN
-        RAISERROR('La factura indicada no existe', 16, 1)
-        RETURN
+        RAISERROR('La fecha/pase de pileta indicado no existe.', 16, 1);
+        RETURN;
     END
 
-    -- Eliminar el registro
-    DELETE FROM dbsl.Factura
-    WHERE idfactura = @idFactura
-
-END
+    DELETE FROM dbsl.PiletaVerano
+    WHERE idPileta = @idPileta;
+END;
 GO
 
