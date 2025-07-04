@@ -264,7 +264,10 @@ EXEC dbsl.GenerarFactura 1001,'2025-04-01';
 go
 EXEC dbsl.GenerarFactura 1001,'2025-05-01';
 go
+EXEC dbsl.GenerarFactura 1001,'2025-06-01';
+go
 
+select * from dbsl.Factura
 --Juegos de prueba para reporte 2
 EXEC dbsl.GenerarFactura 1001,'2019-06-01';
 go

@@ -107,10 +107,10 @@ GO
 
 --EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
 --go
-EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
-GO
---EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
 --GO
+EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
+GO
 --EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
 --GO
 --EXEC dbsl.spImportarSocios 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Responsables_de_pago.csv'
@@ -210,10 +210,10 @@ END
 GO
 
 
-EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
-GO
---EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
+--EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
 --GO
+EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
+GO
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
 --GO
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Grupo_familiar.csv'
@@ -494,15 +494,15 @@ GO
 --EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
 --GO
 
---EXEC dbsl.spImportarLluvia 
-	--'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2024.csv',
-	--'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2025.csv';
-	--GO
+EXEC dbsl.spImportarLluvia 
+	'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2024.csv',
+	'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2025.csv';
+	GO
 
-EXEC dbsl.spImportarLluvia
-    'C:\ARCHIVOS\open-meteo-buenosaires_2024.csv',
-    'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv';
-GO
+--EXEC dbsl.spImportarLluvia
+--    'C:\ARCHIVOS\open-meteo-buenosaires_2024.csv',
+--    'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv';
+--GO
 
 --EXEC dbsl.spImportarLluvia'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\open-meteo-buenosaires_2024.csv','C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\open-meteo-buenosaires_2025.csv';
 --EXEC dbsl.spImportarLluvia
@@ -578,10 +578,10 @@ BEGIN
 END
 GO
 
-EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
-GO
---EXEC dbsl.spImportarPresentismo 'C:\Users\leand\Desktop\TPI-2025-1C\csv\presentismo_actividades.csv'
+--EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
 --GO
+EXEC dbsl.spImportarPresentismo 'C:\Users\leand\Desktop\TPI-2025-1C\csv\presentismo_actividades.csv'
+GO
 --EXEC dbsl.spImportarPresentismo 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\presentismo_actividades.csv'
 --GO
 --SELECT * FROM dbsl.PresentismoClases
@@ -677,10 +677,10 @@ BEGIN
 END
 GO
 
-EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
-GO
---EXEC dbsl.spImportarClases 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Clases_Club.csv'
+--EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
 --GO
+EXEC dbsl.spImportarClases 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Clases_Club.csv'
+GO
 --EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
 --GO
 --EXEC dbsl.spImportarClases 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Clases_Club.csv'
@@ -713,18 +713,6 @@ GO
 EXEC dbsl.insertarMetodoPago 'Pago en Cuenta';
 GO
 
-
---SELECT*FROM dbsl.Cobro 
---SELECT*FROM dbsl.Colonia
---SELECT*FROM dbsl.DetalleFactura
---SELECT*FROM dbsl.Factura
---SELECT*FROM dbsl.Inscripcion
---SELECT*FROM dbsl.Reembolso
---SELECT*FROM dbsl.Reserva
---SELECT*FROM dbsl.Suum
---SELECT*FROM dbsl.Usuario
-
-
 ----------------------------Actualizar los idClase en la tabla PresentismoClases-------------------------------------
 CREATE OR ALTER PROCEDURE dbsl.ActualizaIdClasePresentismo
 AS
@@ -752,13 +740,4 @@ GO
 EXEC dbsl.ActualizaIdClasePresentismo
 GO
 
---SELECT*FROM dbsl.Socio
---SELECT*FROM dbsl.CategoriaSocio
---SELECT*FROM dbsl.GrupoFamiliar
---SELECT*FROM dbsl.PresentismoClases
---SELECT*FROM dbsl.Clase
---SELECT*FROM dbsl.Actividad
---SELECT*FROM dbsl.PiletaVerano
---SELECT*FROM dbsl.Lluvia
---SELECT*FROM dbsl.
 ------------------------------------------------------------------------------------------------------------------------

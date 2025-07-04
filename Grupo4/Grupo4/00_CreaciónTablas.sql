@@ -3,7 +3,6 @@ GO
 USE COM5600G04
 GO
 
-
 CREATE SCHEMA dbsl
 --data base sol norte
 GO
