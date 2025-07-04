@@ -225,23 +225,27 @@ select *from dbsl.Inscripcion
 
 ----------------INSERTAR GENERACION FACTURA---------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.GenerarFactura 1001;
+EXEC dbsl.GenerarFactura 1001,'2025-03-23';
+go
+EXEC dbsl.GenerarFactura 1001,'2025-04-23';
+go
+EXEC dbsl.GenerarFactura 1001,'2025-03-23';
 go
 ----Error esperado: 'El ID de socio debe ser un número positivo.'
 --EXEC dbsl.GenerarFactura 0
 ----Error esperado: 'El ID de socio debe ser un número positivo.'
 --EXEC dbsl.GenerarFactura -5;
 
---select * FROM dbsl.Factura;
---select * FROM dbsl.DetalleFactura;
+select * FROM dbsl.Factura;
+select * FROM dbsl.DetalleFactura;
 
---DELETE FROM dbsl.DetalleFactura;
---DELETE FROM dbsl.Factura;
+--DELETE FROM dbsl.DetalleFactura ;
+--DELETE FROM dbsl.Factura ;
 ------------------GENERAR FACTURA INVITADO---------------
 --EXEC dbsl.GenerarFacturaInvitado @idInscripcion = 5;
 ----------------INSERTAR COBRO----------------------------
 ----Se espera que se ingrese correctamente
---EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=1;
+--EXEC dbsl.insertarCobro @idFactura=10,@idMetodoPago=1;
 ----Se espera que se ingrese correctamente
 --EXEC dbsl.insertarCobro @idFactura=2,@idMetodoPago=1;
 ----Error esperado:'Metodo de pago inexistente.'

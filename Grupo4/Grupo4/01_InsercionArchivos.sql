@@ -105,9 +105,9 @@ END
 GO
 
 
-EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
-EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
---EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
+--EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
+EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
 --EXEC dbsl.spImportarSocios 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Responsables_de_pago.csv'
 
@@ -205,7 +205,7 @@ END
 
 EXEC dbsl.spImportarGrupoFamiliar 'La ruta de su archivo Responsables_de_pago.csv'
 EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
---EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
+EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Grupo_familiar.csv'
 
@@ -491,7 +491,7 @@ EXEC dbsl.spImportarLluvia
 --actividades
 
 CREATE OR ALTER PROCEDURE dbsl.spImportarPresentismo
-    @RutaArchivo VARCHAR(300)
+    @RutaArchivo nVARCHAR(300)
 AS
 BEGIN
     SET NOCOUNT ON
@@ -513,7 +513,7 @@ BEGIN
     BEGIN TRY
        
         -- Armar BULK INSERT dinámico
-        DECLARE @sql VARCHAR(MAX);
+        DECLARE @sql nVARCHAR(MAX);
         SET @sql = '
         BULK INSERT #TemporalPresentismo
         FROM ''' + @RutaArchivo + '''
@@ -553,8 +553,8 @@ BEGIN
 
 END
 
-EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
---EXEC dbsl.spImportarPresentismo 'C:\Users\Usuario\Desktop\presentismo_actividades.csv'
+--EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
+EXEC dbsl.spImportarPresentismo 'C:\Users\leand\Desktop\TPI-2025-1C\csv\presentismo_actividades.csv'
 --EXEC dbsl.spImportarPresentismo 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\presentismo_actividades.csv'
 
 SELECT * FROM dbsl.PresentismoClases
@@ -646,7 +646,7 @@ BEGIN
 
 END
 
-EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
+EXEC dbsl.spImportarClases 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Clases_Club.csv'
 --EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
 --EXEC dbsl.spImportarClases 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Clases_Club.csv'
 

@@ -891,8 +891,9 @@ IF OBJECT_ID('dbsl.GenerarFactura','P') IS NOT NULL
 DROP PROCEDURE dbsl.GenerarFactura
 GO
 
-CREATE PROCEDURE dbsl.GenerarFactura
-    @idSocio INT
+CREATE OR ALTER PROCEDURE dbsl.GenerarFactura
+    @idSocio INT,
+	@FechaCreacion DATE
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -909,7 +910,18 @@ BEGIN
         RETURN
     END
 
-    DECLARE @FechaActual DATE = GETDATE()
+	DECLARE @FechaActual DATE
+
+	IF @FechaCreacion = ''
+	BEGIN	
+		SET @FechaActual = GETDATE()
+	END
+	ELSE
+	BEGIN
+		SET @FechaActual = @FechaCreacion
+	END
+
+   -- DECLARE @FechaActual DATE = '2025-05-23'
     DECLARE @FechaVencimiento DATE = DATEADD(DAY, 5, @FechaActual)
     DECLARE @FechaSegundoVencimiento DATE = DATEADD(DAY, 10, @FechaActual)
     DECLARE @idFactura INT
