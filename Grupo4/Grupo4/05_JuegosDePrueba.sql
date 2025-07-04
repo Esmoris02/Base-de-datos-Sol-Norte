@@ -189,7 +189,7 @@ go
 EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idColonia = 1, @FechaIn = '2025-12-26';
 go
 -- Pileta
-EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 1, @FechaIn = '2025-12-28';
+EXEC dbsl.InsertarInscripcion @NroSocio = 1001, @idPileta = 143, @FechaIn = '2025-12-28';
 go
 
 --select * from dbsl.Inscripcion
@@ -225,19 +225,15 @@ select *from dbsl.Inscripcion
 
 ----------------INSERTAR GENERACION FACTURA---------------
 --Se espera que se ingrese correctamente
-EXEC dbsl.GenerarFactura 1001,'2025-03-23';
-go
-EXEC dbsl.GenerarFactura 1001,'2025-04-23';
-go
-EXEC dbsl.GenerarFactura 1001,'2025-03-23';
+EXEC dbsl.GenerarFactura 1001,'';
 go
 ----Error esperado: 'El ID de socio debe ser un número positivo.'
 --EXEC dbsl.GenerarFactura 0
 ----Error esperado: 'El ID de socio debe ser un número positivo.'
 --EXEC dbsl.GenerarFactura -5;
 
-select * FROM dbsl.Factura;
-select * FROM dbsl.DetalleFactura;
+--select * FROM dbsl.Factura;
+--select * FROM dbsl.DetalleFactura;
 
 --DELETE FROM dbsl.DetalleFactura ;
 --DELETE FROM dbsl.Factura ;
@@ -245,7 +241,7 @@ select * FROM dbsl.DetalleFactura;
 --EXEC dbsl.GenerarFacturaInvitado @idInscripcion = 5;
 ----------------INSERTAR COBRO----------------------------
 ----Se espera que se ingrese correctamente
---EXEC dbsl.insertarCobro @idFactura=10,@idMetodoPago=1;
+--EXEC dbsl.insertarCobro @idFactura=1,@idMetodoPago=1;
 ----Se espera que se ingrese correctamente
 --EXEC dbsl.insertarCobro @idFactura=2,@idMetodoPago=1;
 ----Error esperado:'Metodo de pago inexistente.'
@@ -261,3 +257,5 @@ select * FROM dbsl.DetalleFactura;
 --select * from dbsl.Reembolso
 --delete from dbsl.Reembolso
 
+--exec dbsl.ReintegrarPiletaPorLluvia '2025-01-17' 
+--select * from dbsl.piletaverano

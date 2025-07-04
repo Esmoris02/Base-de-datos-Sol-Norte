@@ -611,6 +611,48 @@ BEGIN
     WHERE idFactura = @idFactura;
 END;
 GO
+--Realizar reembolso por lluvia-------------------------------------------------
+
+IF OBJECT_ID('dbsl.ReintegrarPiletaPorLluvia', 'P') IS NOT NULL
+    DROP PROCEDURE dbsl.ReintegrarPiletaPorLluvia;
+GO
+CREATE PROCEDURE dbsl.ReintegrarPiletaPorLluvia
+    @Fecha DATE        
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO dbsl.Reembolso (
+        idCobro,
+        MetodoPago,
+        Porcentaje,
+        Monto,
+        Motivo,
+        PagoACuenta
+    )
+    SELECT
+        C.idCobro,
+        'Pago a cuenta',            -- texto fijo
+        60,                         -- %
+        CAST(C.Monto*0.60 AS INT),
+        'Reintegro 60 % por lluvia en pileta',
+        1                           -- PagoACuenta = TRUE
+    FROM dbsl.Cobro C
+    JOIN dbsl.Factura        F  ON C.idFactura = F.idFactura
+    JOIN dbsl.DetalleFactura DF ON DF.idFactura = F.idFactura
+    JOIN dbsl.Inscripcion    I  ON I.idInscripcion = DF.idInscripcion
+    JOIN dbsl.PiletaVerano   PV ON PV.idPileta    = I.idPileta
+    /* Evitar duplicado */
+    LEFT JOIN dbsl.Reembolso R  ON R.idCobro = C.idCobro
+    WHERE PV.Fecha = @Fecha
+      AND PV.Lluvia = 1
+      AND F.Estado = 'Pagada'
+      AND DF.tipoItem LIKE 'Pileta%'          -- socios o invitados
+      AND R.idCobro IS NULL;                    --evitar duplicados
+
+    PRINT 'Reintegros por lluvia procesados (versión simple).';
+END;
+GO
+
 
  --Detalle Factura-------------------------------------------------
 
@@ -1209,23 +1251,23 @@ BEGIN
 
     -- OBTENER DATOS DEL INVITADO & PILETA 
     DECLARE 
-        @idInvitado         INT,
-        @NroSocioResp       INT,
-        @idPileta           INT,
-        @FechaNacimiento    DATE,
-        @Edad               INT,
-        @TipoDePase         VARCHAR(20),
-        @Monto              INT,
-        @Hoy                DATE = GETDATE(),
+        @idInvitado INT,
+        @NroSocioResp INT,
+        @idPileta INT,
+        @FechaNacimiento DATE,
+        @Edad INT,
+        @TipoDePase VARCHAR(20),
+        @Monto INT,
+        @Hoy DATE = GETDATE(),
         @idFactura          INT;
 
     SELECT 
-        @idInvitado      = Ins.idInvitado,
-        @idPileta        = Ins.idPileta,
-        @NroSocioResp    = Ins.NroSocio,
+        @idInvitado = Ins.idInvitado,
+        @idPileta = Ins.idPileta,
+        @NroSocioResp = Ins.NroSocio,
         @FechaNacimiento = Inv.FechaNacimiento
     FROM dbsl.Inscripcion  Ins
-    JOIN dbsl.Invitado     Inv ON Inv.idInvitado = Ins.idInvitado
+    JOIN dbsl.Invitado Inv ON Inv.idInvitado = Ins.idInvitado
     WHERE Ins.idInscripcion = @idInscripcion;
 
     --Calculo Edad para determinar el monto a cobrar
@@ -1237,7 +1279,8 @@ BEGIN
         @TipoDePase = PV.TipoDePase,
         @Monto = CASE 
                    WHEN @Edad < 13 THEN PV.CostoInvitadoMenor
-                   ELSE                 PV.CostoInvitadoAdulto
+                   ELSE                 
+				   PV.CostoInvitadoAdulto
                  END
     FROM dbsl.PiletaVerano PV
     WHERE PV.idPileta = @idPileta;
