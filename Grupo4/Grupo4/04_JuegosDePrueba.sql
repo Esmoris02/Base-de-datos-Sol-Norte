@@ -259,3 +259,17 @@ go
 
 --exec dbsl.ReintegrarPiletaPorLluvia '2025-01-17' 
 --select * from dbsl.piletaverano
+
+--Juegos de prueba para reporte 2
+EXEC dbsl.GenerarFactura 1001,'2019-06-01';
+go
+EXEC dbsl.GenerarFactura 1001,'2019-07-01';
+go
+EXEC dbsl.GenerarFactura 1001,'2019-08-01';
+go
+EXEC dbsl.insertarCobro @idFactura=2,@idMetodoPago=1;
+go
+EXEC dbsl.insertarCobro @idFactura=3,@idMetodoPago=1;
+go
+EXEC dbsl.insertarCobro @idFactura=4,@idMetodoPago=1;
+go

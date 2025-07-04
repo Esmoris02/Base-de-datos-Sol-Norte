@@ -106,15 +106,20 @@ GO
 
 
 --EXEC dbsl.spImportarSocios 'La ruta de su archivo Responsables_de_pago.csv'
---EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
-EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
+--go
+EXEC dbsl.spImportarSocios 'C:\ARCHIVOS\Responsables_de_pago.csv'
+GO
+--EXEC dbsl.spImportarSocios 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Responsables_de_pago.csv'
+--GO
 --EXEC dbsl.spImportarSocios 'C:\Users\Usuario\Desktop\Responsables_de_pago.csv'
+--GO
 --EXEC dbsl.spImportarSocios 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Responsables_de_pago.csv'
+--GO
 
 --Visualizar los resultados
-SELECT * FROM dbsl.Socio
-SELECT * FROM dbsl.GrupoFamiliar
-DELETE FROM dbsl.Socio
+--SELECT * FROM dbsl.Socio
+--SELECT * FROM dbsl.GrupoFamiliar
+--DELETE FROM dbsl.Socio
 
 --Para importar los socios del archivo "Grupo_familiar.csv" Creamos el siguiente SP
 
@@ -202,15 +207,20 @@ BEGIN
     PRINT 'Importacion completada correctamente.'
 
 END
+GO
 
-EXEC dbsl.spImportarGrupoFamiliar 'La ruta de su archivo Responsables_de_pago.csv'
+
 EXEC dbsl.spImportarGrupoFamiliar 'C:\ARCHIVOS\Grupo_familiar .csv'
-EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
+GO
+--EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Grupo_familiar.csv'
+--GO
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Usuario\Desktop\Grupo_familiar.csv'
+--GO
 --EXEC dbsl.spImportarGrupoFamiliar 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Grupo_familiar.csv'
+--GO
 
 --Visualizar resultado
-select * from dbsl.Socio
+--select * from dbsl.Socio
 
 ----------------------------Carga Categoria de socio-----------------------------------------------------------------------------------------------
 
@@ -245,10 +255,13 @@ END
 GO
 
 EXEC dbsl.CargarEditarCategoriaSocio 'Menor',0,12,10000,'31/05/2025','c'
+GO
 EXEC dbsl.CargarEditarCategoriaSocio 'Cadete',13,17,15000,'31/05/2025','c'
+GO
 EXEC dbsl.CargarEditarCategoriaSocio 'Mayor',18,99,25000,'31/05/2025','c'
+GO
 
-SELECT * FROM dbsl.CategoriaSocio	
+--SELECT * FROM dbsl.CategoriaSocio	
  
 
 ----------------------------Carga Actividades-----------------------------------------------------------------------------------------------
@@ -285,13 +298,19 @@ END
 GO
 
 EXEC dbsl.CargarEditarActividad '31/05/2025','Futsal', 25000,'c'
+GO
 EXEC dbsl.CargarEditarActividad '31/05/2025','Vóley', 30000,'c'
+GO
 EXEC dbsl.CargarEditarActividad '31/05/2025','Taekwondo', 25000,'c'
+GO
 EXEC dbsl.CargarEditarActividad '31/05/2025','Baile artístico', 30000,'c'
+GO
 EXEC dbsl.CargarEditarActividad '31/05/2025','Natación', 45000,'c'
+GO
 EXEC dbsl.CargarEditarActividad '31/05/2025','Ajedrez', 2000,'c'
+GO
 
-SELECT * FROM dbsl.Actividad
+--SELECT * FROM dbsl.Actividad
 
 
 ------------------------------------CARGAR PiletaVerano------------------------------------------------------------------------------------------------
@@ -349,10 +368,12 @@ BEGIN
     PRINT 'Carga de PiletaVerano completada correctamente.'
 	
 END
+GO
 
 EXEC dbsl.spCargarPiletaVerano
+GO
 
-SELECT * from dbsl.PiletaVerano
+--SELECT * from dbsl.PiletaVerano
 
 ---------------------------Cargar Archivos de clima 2024 y 2025-----------------------------------------------------------------------------------
 
@@ -471,19 +492,22 @@ GO
 
 
 --EXEC  dbsl.ActualizarLluviaDesdeArchivo 'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv'
+--GO
 
-EXEC dbsl.spImportarLluvia
-    'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2024.csv',
-    'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2025.csv';
+--EXEC dbsl.spImportarLluvia 
+	--'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2024.csv',
+	--'C:\Users\leand\Desktop\TPI-2025-1C\csv\open-meteo-buenosaires_2025.csv';
+	--GO
 
 EXEC dbsl.spImportarLluvia
     'C:\ARCHIVOS\open-meteo-buenosaires_2024.csv',
     'C:\ARCHIVOS\open-meteo-buenosaires_2025.csv';
+GO
 
 --EXEC dbsl.spImportarLluvia'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\open-meteo-buenosaires_2024.csv','C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\open-meteo-buenosaires_2025.csv';
-EXEC dbsl.spImportarLluvia
-    'Coloque la ruta de su archivo 1',
-    'Coloque la ruta de su archivo 2';
+--EXEC dbsl.spImportarLluvia
+    --'Coloque la ruta de su archivo 1',
+    --'Coloque la ruta de su archivo 2';
 
 
 ------------------------------------CARGAR Presentismo------------------------------------------------------------------------------------------------
@@ -552,12 +576,15 @@ BEGIN
 
 
 END
+GO
 
---EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
-EXEC dbsl.spImportarPresentismo 'C:\Users\leand\Desktop\TPI-2025-1C\csv\presentismo_actividades.csv'
+EXEC dbsl.spImportarPresentismo 'C:\ARCHIVOS\presentismo_actividades .csv'
+GO
+--EXEC dbsl.spImportarPresentismo 'C:\Users\leand\Desktop\TPI-2025-1C\csv\presentismo_actividades.csv'
+--GO
 --EXEC dbsl.spImportarPresentismo 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\presentismo_actividades.csv'
-
-SELECT * FROM dbsl.PresentismoClases
+--GO
+--SELECT * FROM dbsl.PresentismoClases
 
 -----------------------------------------------CategoriaSocio------------------------------------------------------------
 --Este procedure actualiza el campo ID CATEGORIA de la Tabla Socio, debido a que dentro de la Tabla Socio, los que venian
@@ -585,7 +612,10 @@ BEGIN
 	WHERE S.FechaNac IS NULL;
 
 END
+GO
+
 EXEC dbsl.spActualizaCategoriaSocio
+GO
 
 
 
@@ -645,10 +675,16 @@ BEGIN
 
 
 END
+GO
 
-EXEC dbsl.spImportarClases 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Clases_Club.csv'
+EXEC dbsl.spImportarClases 'C:\ARCHIVOS\Clases_Club.csv'
+GO
+--EXEC dbsl.spImportarClases 'C:\Users\leand\Desktop\TPI-2025-1C\csv\Clases_Club.csv'
+--GO
 --EXEC dbsl.spImportarClases 'C:\Users\Usuario\Desktop\Clases_Club.csv'
+--GO
 --EXEC dbsl.spImportarClases 'C:\Users\Zuri\Desktop\Archivos Mati\SQL\Recursos de Sol Norte\Clases_Club.csv'
+--GO
 
 -----------------------------------METODO DE PAGO---------------------------------------------------------
 
@@ -671,8 +707,11 @@ END
 GO
 
 EXEC dbsl.insertarMetodoPago 'Credito';
+GO
 EXEC dbsl.insertarMetodoPago 'Debito';
+GO
 EXEC dbsl.insertarMetodoPago 'Pago en Cuenta';
+GO
 
 
 --SELECT*FROM dbsl.Cobro 
@@ -708,16 +747,18 @@ BEGIN
 		WHEN 7 THEN 'Domingo'
 	  END
 END
+GO
 
 EXEC dbsl.ActualizaIdClasePresentismo
+GO
 
-SELECT*FROM dbsl.Socio
-SELECT*FROM dbsl.CategoriaSocio
-SELECT*FROM dbsl.GrupoFamiliar
-SELECT*FROM dbsl.PresentismoClases
-SELECT*FROM dbsl.Clase
-SELECT*FROM dbsl.Actividad
-SELECT*FROM dbsl.PiletaVerano
-SELECT*FROM dbsl.Lluvia
-SELECT*FROM dbsl.
+--SELECT*FROM dbsl.Socio
+--SELECT*FROM dbsl.CategoriaSocio
+--SELECT*FROM dbsl.GrupoFamiliar
+--SELECT*FROM dbsl.PresentismoClases
+--SELECT*FROM dbsl.Clase
+--SELECT*FROM dbsl.Actividad
+--SELECT*FROM dbsl.PiletaVerano
+--SELECT*FROM dbsl.Lluvia
+--SELECT*FROM dbsl.
 ------------------------------------------------------------------------------------------------------------------------

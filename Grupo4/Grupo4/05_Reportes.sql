@@ -45,6 +45,7 @@ GO
 
 
 exec dbsl.ReporteMorososRecurrentes '2025-01-01','2025-12-31';
+go
 --------------------REPORTE 2-------------------------------------------
 
 --Reporte acumulado mensual de ingresos por actividad deportiva al momento en que se saca
@@ -55,7 +56,7 @@ IF OBJECT_ID('dbsl.ReporteIngresosActividadMensual','P') IS NOT NULL
     DROP PROCEDURE dbsl.ReporteIngresosActividadMensual;
 GO
 
-CREATE PROCEDURE dbsl.ReporteIngresosMensualesPorActividad
+CREATE OR ALTER PROCEDURE dbsl.ReporteIngresosMensualesPorActividad
     @Anio INT = NULL
 AS
 BEGIN
@@ -98,13 +99,15 @@ BEGIN
 END;
 GO
 
-exec dbsl.ReporteIngresosMensualesPorActividad
+exec dbsl.ReporteIngresosMensualesPorActividad '2019'
+go
+
 -------------------------REPORTE 3-------------------------------------
 --Reporte de la cantidad de socios que han realizado alguna actividad de forma alternada
 --(inasistencias) por categoría de socios y actividad, ordenado según cantidad de inasistencias
 --ordenadas de mayor a menor.
 ---------------------------------------------------------------
-CREATE PROCEDURE dbsl.ReporteTotalInasistenciasPorCategoriaSocioYActividad
+CREATE OR ALTER PROCEDURE dbsl.ReporteTotalInasistenciasPorCategoriaSocioYActividad
 AS
 BEGIN
 	SELECT 
@@ -122,8 +125,10 @@ BEGIN
 	ORDER BY 
 		TotalInasistencias DESC;
 END
+GO
 
 EXEC dbsl.ReporteTotalInasistenciasPorCategoriaSocioYActividad
+GO
 
 -----------------REPORTE 4---------------------------------------------------------------------------------------
 --Reporte que contenga a los socios que no han asistido a alguna clase de la actividad que
@@ -145,5 +150,7 @@ BEGIN
     WHERE P.Asistencia = 'A'
     ORDER BY S.Apellido, S.Nombre;
 END
+GO
 
 EXEC dbsl.ReporteInasistenciasActividad
+GO

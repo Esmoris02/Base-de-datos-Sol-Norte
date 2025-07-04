@@ -6,6 +6,7 @@ CREATE LOGIN login_adminClub
 WITH PASSWORD = '#SN012025ad',
      CHECK_POLICY = ON;
 
+
 CREATE LOGIN login_jefeDeTesoreria 
 WITH PASSWORD = '#SN012025a',
      DEFAULT_DATABASE = ClubSolNorte,
@@ -57,14 +58,17 @@ WITH PASSWORD = '#SN012025j',
     CHECK_POLICY = ON;
 
 
-
+GO
 USE ClubSolNorte
 GO
 
 --Creación de roles dentro de ClubSolNorte
 CREATE ROLE dbsl_Tesoreria;
+GO
 CREATE ROLE dbsl_Socio;
+GO
 CREATE ROLE dbsl_Autoridad;
+GO
 
 --Creación de usuarios para cada login
 CREATE USER adminClub FOR LOGIN login_adminClub;
@@ -81,7 +85,7 @@ CREATE USER presidente FOR LOGIN login_presidente;
 CREATE USER vicepresidente FOR LOGIN login_vicepresidente;
 CREATE USER secretario FOR LOGIN login_secretario;
 CREATE USER vocales FOR LOGIN login_vocales;
-
+GO
 
 --Añadiendo los usuarios a los roles
 ALTER ROLE db_owner ADD MEMBER adminClub;
@@ -99,35 +103,35 @@ ALTER ROLE dbsl_Autoridad ADD MEMBER presidente;
 ALTER ROLE dbsl_Autoridad ADD MEMBER vicepresidente;
 ALTER ROLE dbsl_Autoridad ADD MEMBER secretario;
 ALTER ROLE dbsl_Autoridad ADD MEMBER vocales;
-
+GO
 -- Dando permisos a los roles
 -- Tesorería puede leer y modificar facturas y cobros
 GRANT SELECT, INSERT, UPDATE ON dbsl.Factura TO dbsl_Tesoreria;
 GRANT SELECT, INSERT, UPDATE ON dbsl.Cobro TO dbsl_Tesoreria;
 GRANT SELECT, UPDATE ON dbsl.MetodoPago TO dbsl_Tesoreria;
-
+GO
 --Los socios solo pueden leer sus datos e inscripciones
 GRANT SELECT ON dbsl.Socio TO dbsl_Socio;
 GRANT SELECT ON dbsl.Inscripcion TO dbsl_Socio;
-
+GO
 -- Las autoridades pueden leer toda la base pero no modificar nada
 GRANT SELECT ON SCHEMA::dbsl TO dbsl_Autoridad;
-
+GO
 
 CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'SN_Master16625';
-
+GO
 CREATE CERTIFICATE Cert_ClubSolNorte
 WITH SUBJECT = 'Certificado para encriptación de datos sensibles de empleados';
-
+GO
 
 CREATE SYMMETRIC KEY SN_DatosSensibles
 WITH ALGORITHM = AES_256
 ENCRYPTION BY CERTIFICATE Cert_ClubSolNorte;
-
+GO
 ALTER TABLE dbsl.Usuario 
 ADD Direccion VARBINARY(256),
 	FecNac VARBINARY(256);
-
+GO
 
 CREATE OR ALTER PROCEDURE dbsl.insertarUsuario
 	@Usuario VARCHAR(50),
@@ -193,6 +197,7 @@ BEGIN
 	INSERT INTO dbsl.Usuario(Usuario,Estado,Contrasenia,Rol,FecVig,NroSocio,Direccion,FecNac)
 	VALUES (@Usuario, @Estado, @ContraseniaEncriptada, @Rol, @FecVig, @NroSocio, @DireccionEncriptada, @FecNacEncriptada)
 END
+GO
 
 EXEC dbsl.insertarUsuario 
     @Usuario = 'admin1',
@@ -263,7 +268,7 @@ EXEC dbsl.insertarUsuario
     @Direccion = 'Belgrano 300',
     @FecNac = '2010-09-12',
     @NroSocio = NULL;
-
+GO
 
 
 OPEN SYMMETRIC KEY SN_DatosSensibles
@@ -275,7 +280,7 @@ SELECT Usuario,
 FROM dbsl.Usuario;
 
 CLOSE SYMMETRIC KEY SN_DatosSensibles;
-
+GO
 
 
 SELECT Usuario,Direccion,FecNac
