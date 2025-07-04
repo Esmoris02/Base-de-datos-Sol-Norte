@@ -10,7 +10,7 @@
 ----																																		----
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
-USE ClubSolNorte
+USE COM5600G04
 go
 
 --Para importar los socios del archivo "Responsables_de_pago.csv" Creeamos el siguiente SP

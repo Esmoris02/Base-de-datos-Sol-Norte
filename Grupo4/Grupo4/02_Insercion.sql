@@ -1,5 +1,5 @@
 ﻿
-use ClubSolNorte
+use COM5600G04
 go
 --Categoria socio
 IF OBJECT_ID('dbsl.InsertarCategoriaSocio','P') IS NOT NULL

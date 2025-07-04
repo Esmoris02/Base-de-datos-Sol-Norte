@@ -1,5 +1,5 @@
 
-use ClubSolNorte
+use COM5600G04
 go
 ---------INSERTAR CATEGORIA SOCIO-------------
 
@@ -259,6 +259,11 @@ go
 
 --exec dbsl.ReintegrarPiletaPorLluvia '2025-01-17' 
 --select * from dbsl.piletaverano
+--Juegos de prueba para reporte 1
+EXEC dbsl.GenerarFactura 1001,'2025-04-01';
+go
+EXEC dbsl.GenerarFactura 1001,'2025-05-01';
+go
 
 --Juegos de prueba para reporte 2
 EXEC dbsl.GenerarFactura 1001,'2019-06-01';

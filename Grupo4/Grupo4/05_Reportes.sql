@@ -1,4 +1,4 @@
-use ClubSolNorte
+use COM5600G04
 go
 ---------------------------------REPORTE 1--------------------------------------
 --Reporte de los socios morosos, que hayan incumplido en más de dos oportunidades dado un

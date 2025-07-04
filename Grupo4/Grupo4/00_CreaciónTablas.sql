@@ -1,8 +1,10 @@
---CREATE DATABASE ClubSolNorte
---GO
-USE ClubSolNorte
+CREATE DATABASE COM5600G04
 GO
---CREATE SCHEMA dbsl
+USE COM5600G04
+GO
+
+
+CREATE SCHEMA dbsl
 --data base sol norte
 GO
 IF NOT EXISTS (SELECT * FROM sys.objects 
